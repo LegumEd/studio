@@ -67,14 +67,6 @@ const handlePrintForm = (student: Student) => {
               flex-direction: column;
               position: relative;
             }
-             .student-id {
-                position: absolute;
-                top: 20mm;
-                right: 20mm;
-                font-size: 12px;
-                color: #555;
-                font-family: monospace;
-            }
             .header {
               text-align: center;
               margin-bottom: 20px;
@@ -145,6 +137,9 @@ const handlePrintForm = (student: Student) => {
                 padding-left: 20px;
                 font-size: 11px;
                 color: #333;
+                -moz-column-count: 1;
+                -webkit-column-count: 1;
+                column-count: 1;
             }
              .rules-section li {
                 margin-bottom: 8px;
@@ -183,7 +178,6 @@ const handlePrintForm = (student: Student) => {
         </head>
         <body>
           <div class="page">
-            <div class="student-id">UID: ${student.id}</div>
             <div>
               <div class="header">
                 <h1>Lex Legum Academy</h1>
@@ -211,6 +205,15 @@ const handlePrintForm = (student: Student) => {
                 <h3>Rules and Procedures</h3>
                 <ol>
                     <li>Fee once paid is not refundable or adjustable under any circumstances.</li>
+                    <li>Students must maintain at least 75% attendance to be eligible for the final examination.</li>
+                    <li>The academy reserves the right to modify the course structure and schedule.</li>
+                    <li>Any damage to academy property will be charged to the responsible student(s).</li>
+                    <li>Students must carry their ID card at all times within the academy premises.</li>
+                    <li>Disciplinary action will be taken against students found engaging in misconduct.</li>
+                    <li>Use of mobile phones is strictly prohibited in classrooms and the library.</li>
+                    <li>Course completion is time-bound. The academy is not responsible for students who fail to attend classes.</li>
+                    <li>All legal disputes are subject to the jurisdiction of the Ghaziabad court only.</li>
+                    <li>The academy may use student photos and testimonials for promotional purposes.</li>
                 </ol>
               </div>
             </div>
@@ -375,5 +378,3 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
     </>
   );
 }
-
-
