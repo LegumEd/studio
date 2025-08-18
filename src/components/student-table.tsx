@@ -135,7 +135,7 @@ const handlePrintForm = (student: Student) => {
             }
             .rules-section ol {
                 padding-left: 20px;
-                font-size: 11px;
+                font-size: 12px;
                 color: #333;
                 -moz-column-count: 1;
                 -webkit-column-count: 1;
@@ -206,14 +206,14 @@ const handlePrintForm = (student: Student) => {
                 <ol>
                     <li>Fee once paid is not refundable or adjustable under any circumstances.</li>
                     <li>Students must maintain at least 75% attendance to be eligible for the final examination.</li>
-                    <li>The academy reserves the right to modify the course structure and schedule.</li>
+                    <li>The academy reserves the right to modify the course structure and schedule without prior notice.</li>
                     <li>Any damage to academy property will be charged to the responsible student(s).</li>
                     <li>Students must carry their ID card at all times within the academy premises.</li>
-                    <li>Disciplinary action will be taken against students found engaging in misconduct.</li>
+                    <li>Misconduct, indiscipline, or violation of rules may result in suspension or expulsion.</li>
                     <li>Use of mobile phones is strictly prohibited in classrooms and the library.</li>
-                    <li>Course completion is time-bound. The academy is not responsible for students who fail to attend classes.</li>
+                    <li>The course is time-bound. The academy is not responsible for students who fail to attend classes and complete the course on time.</li>
                     <li>All legal disputes are subject to the jurisdiction of the Ghaziabad court only.</li>
-                    <li>The academy may use student photos and testimonials for promotional purposes.</li>
+                    <li>The academy may use student photographs and testimonials for promotional purposes.</li>
                 </ol>
               </div>
             </div>
