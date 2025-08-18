@@ -32,6 +32,7 @@ export interface Student {
   lastUpdated: Timestamp | Date | string;
 }
 
+// This is now managed in Firestore, but kept here as a fallback or for reference
 export const courses = [
   "PCSj", "APO", "CLAT", "BALLB 1", "BALLB 2", "BALLB 3", "BALLB 4", "BALLB 5", 
   "BALLB 6", "BALLB 7", "BALLB 8", "BALLB 9", "BALLB 10", "LLB 1", "LLB 2", "LLB 3", 
