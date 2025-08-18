@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Scale } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function Header() {
   const [time, setTime] = useState('');
@@ -22,11 +23,9 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+      <SidebarTrigger className="md:hidden" />
       <div className="flex items-center gap-2">
-        <Scale className="h-8 w-8 text-primary" />
-        <h1 className="text-2xl font-headline font-semibold text-primary">
-          Lex Legum Academy Student Hub
-        </h1>
+        {/* The title is now in the sidebar for desktop, but we can have a breadcrumb or page title here */}
       </div>
       <div className="ml-auto flex flex-col items-end">
         <p className="text-sm font-medium text-foreground">{date}</p>

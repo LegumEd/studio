@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface DocumentFile {
   name: string;
   data: string; // Base64 data URL
@@ -27,7 +29,7 @@ export interface Student {
   photo?: string; // Base64 data URL
   documents?: DocumentFile[];
   paymentHistory?: Payment[];
-  lastUpdated: string;
+  lastUpdated: Timestamp | Date | string;
 }
 
 export const courses = [

@@ -1,5 +1,5 @@
-import Dashboard from "@/components/dashboard";
+import EnrollmentsPage from "./enrollments/page";
 
 export default function Home() {
-  return <Dashboard />;
+  return <EnrollmentsPage />;
 }
