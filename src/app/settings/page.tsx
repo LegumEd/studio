@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type Course = {
   id: string;
@@ -28,9 +28,10 @@ export default function SettingsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "courses"), (snapshot) => {
+    const q = query(collection(db, "courses"), orderBy("name"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const coursesData = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })) as Course[];
-      setCourses(coursesData.sort((a, b) => a.name.localeCompare(b.name)));
+      setCourses(coursesData);
     });
     return () => unsubscribe();
   }, []);
@@ -50,15 +51,14 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUpdateCourse = async (id: string, newName: string) => {
-    if (newName.trim() === "") {
+  const handleUpdateCourse = async () => {
+    if (!editingCourse || editingCourse.name.trim() === "") {
       toast({ title: "Error", description: "Course name cannot be empty.", variant: "destructive" });
       return;
     }
     try {
-      const courseRef = doc(db, "courses", id);
-      await updateDoc(courseRef, { name: newName.trim() });
-      setCourses(prev => prev.map(c => c.id === id ? { ...c, name: newName.trim() } : c).sort((a, b) => a.name.localeCompare(b.name)));
+      const courseRef = doc(db, "courses", editingCourse.id);
+      await updateDoc(courseRef, { name: editingCourse.name.trim() });
       toast({ title: "Success", description: "Course updated successfully." });
     } catch (error) {
         console.error("Error updating course:", error);
@@ -88,20 +88,23 @@ export default function SettingsPage() {
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Settings</h2>
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Settings</CardTitle>
-          <CardDescription>Manage application settings.</CardDescription>
+          <CardTitle>Manage Courses</CardTitle>
+          <CardDescription>Add, edit, or delete courses offered by the academy.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-8">
             <div>
-              <h3 className="text-xl font-semibold mb-4">Manage Courses</h3>
               <div className="flex gap-2 mb-4">
                 <Input
                   placeholder="Enter new course name"
                   value={newCourseName}
                   onChange={(e) => setNewCourseName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddCourse()}
                 />
                 <Button onClick={handleAddCourse}>Add Course</Button>
               </div>
@@ -134,6 +137,11 @@ export default function SettingsPage() {
                         </TableCell>
                       </TableRow>
                     ))}
+                    {courses.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={2} className="h-24 text-center">No courses found. Add one to get started.</TableCell>
+                        </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -150,10 +158,11 @@ export default function SettingsPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Input
-              defaultValue={editingCourse?.name}
+              value={editingCourse?.name || ''}
+              onChange={(e) => editingCourse && setEditingCourse({...editingCourse, name: e.target.value})}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && editingCourse) {
-                  handleUpdateCourse(editingCourse.id, e.currentTarget.value);
+                if (e.key === 'Enter') {
+                  handleUpdateCourse();
                 }
               }}
               autoFocus
@@ -161,7 +170,7 @@ export default function SettingsPage() {
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setEditingCourse(null)}>Cancel</Button>
-            <Button onClick={() => editingCourse && handleUpdateCourse(editingCourse.id, (document.querySelector('input') as HTMLInputElement).value)}>Save Changes</Button>
+            <Button onClick={handleUpdateCourse}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

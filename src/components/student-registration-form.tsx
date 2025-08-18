@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -25,7 +26,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { courses, paymentModes, type Student, type DocumentFile } from "@/lib/types";
+import { paymentModes, type Student, type DocumentFile } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
@@ -52,6 +53,7 @@ const studentSchema = z.object({
 });
 
 interface StudentRegistrationFormProps {
+  courses: string[];
   onStudentAdd: (student: Omit<Student, 'id' | 'lastUpdated'>) => void;
   triggerButton: React.ReactNode;
 }
@@ -72,7 +74,7 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
     return await Promise.all(filePromises);
 };
 
-export default function StudentRegistrationForm({ onStudentAdd, triggerButton }: StudentRegistrationFormProps) {
+export default function StudentRegistrationForm({ courses, onStudentAdd, triggerButton }: StudentRegistrationFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
   const {

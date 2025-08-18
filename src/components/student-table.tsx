@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -34,11 +35,12 @@ import {
 
 interface StudentTableProps {
   students: Student[];
+  courses: string[];
   onUpdateStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
 }
 
-export default function StudentTable({ students, onUpdateStudent, onDeleteStudent }: StudentTableProps) {
+export default function StudentTable({ students, courses, onUpdateStudent, onDeleteStudent }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -64,81 +66,83 @@ export default function StudentTable({ students, onUpdateStudent, onDeleteStuden
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="hidden w-[100px] sm:table-cell">
-              <span className="sr-only">Image</span>
-            </TableHead>
-            <TableHead>Roll No.</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Course</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="hidden md:table-cell">Fee Paid</TableHead>
-            <TableHead className="hidden md:table-cell">Due</TableHead>
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {students.length > 0 ? (
-            students.map((student) => {
-              const due = student.totalFee - student.amountPaid;
-              const status = due <= 0 ? "Paid" : "Pending";
-              return (
-                <TableRow key={student.id}>
-                  <TableCell className="hidden sm:table-cell">
-                    <img
-                      alt="Student photo"
-                      className="aspect-square rounded-md object-cover"
-                      height="64"
-                      src={student.photo || "https://placehold.co/64x64.png"}
-                      width="64"
-                      data-ai-hint="student portrait"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{student.roll}</TableCell>
-                  <TableCell className="font-medium">{student.fullName}</TableCell>
-                  <TableCell>{student.course}</TableCell>
-                  <TableCell>
-                    <Badge variant={status === "Paid" ? "default" : "destructive"} className={status === "Paid" ? "bg-green-600" : ""}>
-                      {status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    ₹{student.amountPaid.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    ₹{due.toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => handleDeleteClick(student.id)} className="text-destructive">Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          ) : (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={8} className="text-center h-24">
-                No students found.
-              </TableCell>
+              <TableHead className="hidden w-[100px] sm:table-cell">
+                <span className="sr-only">Image</span>
+              </TableHead>
+              <TableHead>Roll No.</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Course</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell text-right">Fee Paid</TableHead>
+              <TableHead className="hidden md:table-cell text-right">Due</TableHead>
+              <TableHead>
+                <span className="sr-only">Actions</span>
+              </TableHead>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {students.length > 0 ? (
+              students.map((student) => {
+                const due = student.totalFee - student.amountPaid;
+                const status = due <= 0 ? "Paid" : "Pending";
+                return (
+                  <TableRow key={student.id}>
+                    <TableCell className="hidden sm:table-cell">
+                      <img
+                        alt="Student photo"
+                        className="aspect-square rounded-md object-cover"
+                        height="64"
+                        src={student.photo || "https://placehold.co/64x64.png"}
+                        width="64"
+                        data-ai-hint="student portrait"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{student.roll}</TableCell>
+                    <TableCell className="font-medium">{student.fullName}</TableCell>
+                    <TableCell>{student.course}</TableCell>
+                    <TableCell>
+                      <Badge variant={status === "Paid" ? "default" : "destructive"} className={status === "Paid" ? "bg-green-600" : ""}>
+                        {status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-right">
+                      ₹{student.amountPaid.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-right">
+                      ₹{due.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleDeleteClick(student.id)} className="text-destructive">Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center h-24">
+                  No students found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       {selectedStudent && (
         <StudentProfileModal
             isOpen={isModalOpen}
@@ -148,6 +152,7 @@ export default function StudentTable({ students, onUpdateStudent, onDeleteStuden
                 onUpdateStudent(s);
                 setSelectedStudent(s); // Keep modal updated with latest data
             }}
+            courses={courses}
         />
       )}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>

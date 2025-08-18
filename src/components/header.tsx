@@ -1,7 +1,7 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Scale } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function Header() {
@@ -22,7 +22,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <SidebarTrigger className="md:hidden" />
       <div className="flex items-center gap-2">
         {/* The title is now in the sidebar for desktop, but we can have a breadcrumb or page title here */}

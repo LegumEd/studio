@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -15,18 +16,19 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { PlusCircle } from "lucide-react";
 import StudentTable from "@/components/student-table";
 import StudentRegistrationForm from "@/components/student-registration-form";
 import type { Student } from "@/lib/types";
-import { courses } from "@/lib/types";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EnrollmentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [courses, setCourses] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
   const { toast } = useToast();
@@ -40,8 +42,15 @@ export default function EnrollmentsPage() {
       console.error("Error fetching students:", error);
       toast({ title: "Error", description: "Failed to fetch student data.", variant: "destructive" });
     });
+    
+    const coursesUnsubscribe = onSnapshot(collection(db, "courses"), (snapshot) => {
+      setCourses(snapshot.docs.map(doc => doc.data().name).sort());
+    });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      coursesUnsubscribe();
+    };
   }, [toast]);
 
   const filteredStudents = useMemo(() => {
@@ -96,10 +105,14 @@ export default function EnrollmentsPage() {
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Student Records</h2>
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Student Records</CardTitle>
-          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 mt-4">
+          <CardTitle>Manage Students</CardTitle>
+          <CardDescription>Search, filter, and manage all enrolled students.</CardDescription>
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 pt-4">
             <div className="flex gap-4 w-full md:w-auto">
                 <Input
                     placeholder="Search by name or roll number..."
@@ -123,6 +136,7 @@ export default function EnrollmentsPage() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <StudentRegistrationForm 
+                courses={courses}
                 onStudentAdd={addStudent}
                 triggerButton={
                   <Button size="sm" className="h-8 gap-1">
@@ -141,6 +155,7 @@ export default function EnrollmentsPage() {
             students={filteredStudents} 
             onUpdateStudent={updateStudent}
             onDeleteStudent={deleteStudent}
+            courses={courses}
           />
         </CardContent>
       </Card>

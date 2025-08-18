@@ -1,9 +1,10 @@
+
 "use client"
 
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookUser, HandCoins, Settings, Target, Scale } from 'lucide-react';
+import { BookUser, HandCoins, Settings, Target, Scale, LayoutDashboard } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -13,8 +14,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
 } from '@/components/ui/sidebar';
 import Header from './header';
 
@@ -22,6 +21,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
 
     const menuItems = [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/enrollments', label: 'Enrollments', icon: BookUser },
         { href: '/enquiries', label: 'Enquiries', icon: Target },
         { href: '/expenses', label: 'Expenses & Income', icon: HandCoins },
@@ -35,7 +35,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                      <div className="flex items-center gap-2 p-2">
                         <Scale className="h-8 w-8 text-sidebar-primary" />
                         <h1 className="text-xl font-headline font-semibold text-sidebar-primary group-data-[collapsible=icon]:hidden">
-                            Lex Legum
+                            Lex Legum Academy
                         </h1>
                     </div>
                 </SidebarHeader>
@@ -45,7 +45,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                              <SidebarMenuItem key={item.href}>
                                 <SidebarMenuButton
                                     asChild
-                                    isActive={pathname.startsWith(item.href)}
+                                    isActive={pathname === item.href}
                                     tooltip={item.label}
                                 >
                                     <Link href={item.href}>
@@ -61,14 +61,12 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                     {/* Footer content if any */}
                 </SidebarFooter>
             </Sidebar>
-            <SidebarInset>
-                <div className="flex flex-col h-full">
-                    <Header />
-                    <div className="flex-1 overflow-y-auto">
-                        {children}
-                    </div>
+            <div className="flex flex-col h-full w-full">
+                <Header />
+                <div className="flex-1 overflow-y-auto">
+                    {children}
                 </div>
-            </SidebarInset>
+            </div>
         </SidebarProvider>
     )
 }

@@ -1,5 +1,5 @@
-import EnrollmentsPage from "./enrollments/page";
+import DashboardPage from "./dashboard/page";
 
 export default function Home() {
-  return <EnrollmentsPage />;
+  return <DashboardPage />;
 }

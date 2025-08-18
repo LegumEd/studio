@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +13,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
 const transactionSchema = z.object({
@@ -63,14 +62,7 @@ export default function ExpensesPage() {
   useEffect(() => {
     const q = query(collection(db, "transactions"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const transactionsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-              ...data,
-              id: doc.id,
-              date: data.date,
-          } as Transaction;
-      });
+      const transactionsData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }) as Transaction);
       setTransactions(transactionsData);
     });
 
@@ -146,7 +138,10 @@ export default function ExpensesPage() {
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div className="grid gap-4 md:grid-cols-3">
+       <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Expenses & Income</h2>
+      </div>
+       <div className="grid gap-4 md:grid-cols-3">
         <Card>
             <CardHeader className="pb-2">
                 <CardDescription>Total Income</CardDescription>
@@ -168,7 +163,7 @@ export default function ExpensesPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Transactions</CardTitle>
+          <CardTitle>Transactions</CardTitle>
           <CardDescription>Track all income and expenses.</CardDescription>
            <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 mt-4">
               <div className="flex gap-4 w-full md:w-auto">
@@ -194,52 +189,58 @@ export default function ExpensesPage() {
             </div>
         </CardHeader>
         <CardContent>
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.length > 0 ? (
-                filteredTransactions.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell>{format(new Date(t.date), "PPP")}</TableCell>
-                    <TableCell className="font-medium max-w-[200px] truncate">{t.description}</TableCell>
-                    <TableCell>{t.category}</TableCell>
-                    <TableCell>{t.type}</TableCell>
-                    <TableCell className={`text-right font-medium ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
-                        {t.type === 'Income' ? '+' : '-'}₹{t.amount.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => openForm(t)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(t.id)} className="text-destructive">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
+           <div className="rounded-md border">
+             <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">No transactions found.</TableCell>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell>{format(new Date(t.date), "PPP")}</TableCell>
+                      <TableCell className="font-medium max-w-[200px] truncate">{t.description}</TableCell>
+                      <TableCell>{t.category}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 text-xs rounded-full ${t.type === 'Income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {t.type}
+                        </span>
+                      </TableCell>
+                      <TableCell className={`text-right font-medium ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {t.type === 'Income' ? '+' : '-'}₹{t.amount.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onSelect={() => openForm(t)}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleDeleteClick(t.id)} className="text-destructive">Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center h-24">No transactions found.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+           </div>
         </CardContent>
       </Card>
       
@@ -289,7 +290,7 @@ export default function ExpensesPage() {
                   name="category"
                   control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!transactionType}>
                       <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
                       <SelectContent>
                         {(transactionType === 'Income' ? incomeCategories : expenseCategories).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}

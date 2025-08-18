@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -151,10 +151,13 @@ export default function EnquiriesPage() {
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+       <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight font-headline">Enquiries</h2>
+      </div>
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-3xl">Enquiries</CardTitle>
-          <CardDescription>Manage student enquiries.</CardDescription>
+          <CardTitle>Manage Enquiries</CardTitle>
+          <CardDescription>Manage and track all student enquiries.</CardDescription>
            <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 mt-4">
               <div className="flex gap-4 w-full md:w-auto">
                 <Input
@@ -184,6 +187,7 @@ export default function EnquiriesPage() {
             </div>
         </CardHeader>
         <CardContent>
+          <div className="rounded-md border">
            <Table>
             <TableHeader>
               <TableRow>
@@ -193,7 +197,7 @@ export default function EnquiriesPage() {
                 <TableHead>Course</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Notes</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
+                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -206,7 +210,7 @@ export default function EnquiriesPage() {
                     <TableCell>{enquiry.course}</TableCell>
                     <TableCell>{enquiry.status}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{enquiry.notes}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -230,6 +234,7 @@ export default function EnquiriesPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
       

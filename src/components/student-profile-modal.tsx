@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -12,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import type { Student, DocumentFile, Payment } from "@/lib/types";
-import { courses, paymentModes } from "@/lib/types";
+import { paymentModes } from "@/lib/types";
 import { format } from "date-fns";
 import { Download, Printer, Save, Trash2, Upload } from 'lucide-react';
 
@@ -22,6 +23,7 @@ interface StudentProfileModalProps {
   setIsOpen: (isOpen: boolean) => void;
   student: Student;
   onUpdateStudent: (student: Student) => void;
+  courses: string[];
 }
 
 const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
@@ -41,7 +43,7 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
 };
 
 
-export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent }: StudentProfileModalProps) {
+export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses }: StudentProfileModalProps) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
   const [newPayment, setNewPayment] = useState({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   const { toast } = useToast();
@@ -86,14 +88,16 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
         date: newPayment.date,
         timestamp: new Date().toISOString()
     };
-
+    
     const updatedStudent: Student = {
         ...editedStudent,
-        amountPaid: editedStudent.amountPaid + amount,
+        amountPaid: (editedStudent.amountPaid || 0) + amount,
         paymentHistory: [...(editedStudent.paymentHistory || []), payment]
     };
+    
+    setEditedStudent(updatedStudent); // Update local state immediately
+    onUpdateStudent(updatedStudent); // Propagate change to parent
 
-    onUpdateStudent(updatedStudent);
     toast({ title: "Success", description: "Payment added successfully." });
     setNewPayment({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   };
@@ -225,7 +229,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                     <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
-                            <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={handleInputChange} /></div>
+                            <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} /></div>
                             <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
                         </div>
                     </TabsContent>
@@ -242,19 +246,21 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                             <div><Label>Date</Label><Input type="date" value={newPayment.date} onChange={e => setNewPayment(p => ({...p, date: e.target.value}))} /></div>
                             <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment</Button></div>
                         </div>
+                        <div className="rounded-md border">
                         <Table>
-                            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead>Actions</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {editedStudent.paymentHistory?.map((p, i) => (
+                                {editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
                                     <TableRow key={i}>
                                         <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
                                         <TableCell>₹{p.amount.toLocaleString()}</TableCell>
                                         <TableCell>{p.mode}</TableCell>
-                                        <TableCell><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
+                                        <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
+                        </div>
                     </TabsContent>
                     <TabsContent value="documents">
                         {/* Document management UI here */}
