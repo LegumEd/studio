@@ -33,6 +33,12 @@ export interface Student {
   lastUpdated: Timestamp | Date | string;
 }
 
+export interface Course {
+  id: string;
+  name: string;
+  fee: number;
+}
+
 // This is managed in Firestore and fetched dynamically.
 // Kept here only for reference for paymentModes.
 export const paymentModes = ["Cash", "UPI", "Bank Transfer"];

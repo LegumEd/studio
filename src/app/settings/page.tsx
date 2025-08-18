@@ -13,15 +13,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-
-type Course = {
-  id: string;
-  name: string;
-};
+import type { Course } from "@/lib/types";
+import { Label } from '@/components/ui/label';
 
 export default function SettingsPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseName, setNewCourseName] = useState("");
+  const [newCourseFee, setNewCourseFee] = useState<number | '' >('');
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
@@ -30,21 +28,22 @@ export default function SettingsPage() {
   useEffect(() => {
     const q = query(collection(db, "courses"), orderBy("name"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const coursesData = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name })) as Course[];
+      const coursesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course));
       setCourses(coursesData);
     });
     return () => unsubscribe();
   }, []);
 
   const handleAddCourse = async () => {
-    if (newCourseName.trim() === "") {
-      toast({ title: "Error", description: "Course name cannot be empty.", variant: "destructive" });
+    if (newCourseName.trim() === "" || newCourseFee === '' || newCourseFee <= 0) {
+      toast({ title: "Error", description: "Course name and a valid fee are required.", variant: "destructive" });
       return;
     }
     try {
-      await addDoc(collection(db, "courses"), { name: newCourseName.trim() });
+      await addDoc(collection(db, "courses"), { name: newCourseName.trim(), fee: newCourseFee });
       toast({ title: "Success", description: "Course added successfully." });
       setNewCourseName("");
+      setNewCourseFee('');
     } catch (error) {
       console.error("Error adding course:", error);
       toast({ title: "Error", description: "Failed to add course.", variant: "destructive" });
@@ -52,13 +51,13 @@ export default function SettingsPage() {
   };
 
   const handleUpdateCourse = async () => {
-    if (!editingCourse || editingCourse.name.trim() === "") {
-      toast({ title: "Error", description: "Course name cannot be empty.", variant: "destructive" });
+    if (!editingCourse || editingCourse.name.trim() === "" || !editingCourse.fee || editingCourse.fee <= 0) {
+      toast({ title: "Error", description: "Course name and a valid fee are required.", variant: "destructive" });
       return;
     }
     try {
       const courseRef = doc(db, "courses", editingCourse.id);
-      await updateDoc(courseRef, { name: editingCourse.name.trim() });
+      await updateDoc(courseRef, { name: editingCourse.name.trim(), fee: editingCourse.fee });
       toast({ title: "Success", description: "Course updated successfully." });
     } catch (error) {
         console.error("Error updating course:", error);
@@ -99,13 +98,9 @@ export default function SettingsPage() {
         <CardContent>
           <div className="space-y-8">
             <div>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Enter new course name"
-                  value={newCourseName}
-                  onChange={(e) => setNewCourseName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCourse()}
-                />
+              <div className="flex items-end gap-2 mb-4">
+                <div className="flex-grow"><Label htmlFor="newCourseName">Course Name</Label><Input id="newCourseName" placeholder="Enter new course name" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} /></div>
+                <div className="w-48"><Label htmlFor="newCourseFee">Fee</Label><Input id="newCourseFee" type="number" placeholder="Enter fee" value={newCourseFee} onChange={(e) => setNewCourseFee(parseFloat(e.target.value) || '')} /></div>
                 <Button onClick={handleAddCourse}>Add Course</Button>
               </div>
               <div className="border rounded-md">
@@ -113,6 +108,7 @@ export default function SettingsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Course Name</TableHead>
+                      <TableHead>Fee</TableHead>
                       <TableHead className="w-[100px] text-right"><span className="sr-only">Actions</span></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -120,6 +116,7 @@ export default function SettingsPage() {
                     {courses.map((course) => (
                       <TableRow key={course.id}>
                         <TableCell className="font-medium">{course.name}</TableCell>
+                        <TableCell>₹{(course.fee || 0).toLocaleString()}</TableCell>
                         <TableCell className="text-right">
                            <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -139,7 +136,7 @@ export default function SettingsPage() {
                     ))}
                     {courses.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={2} className="h-24 text-center">No courses found. Add one to get started.</TableCell>
+                            <TableCell colSpan={3} className="h-24 text-center">No courses found. Add one to get started.</TableCell>
                         </TableRow>
                     )}
                   </TableBody>
@@ -157,16 +154,22 @@ export default function SettingsPage() {
             <DialogTitle>Edit Course</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Input
-              value={editingCourse?.name || ''}
-              onChange={(e) => editingCourse && setEditingCourse({...editingCourse, name: e.target.value})}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleUpdateCourse();
-                }
-              }}
-              autoFocus
-            />
+            <div>
+              <Label>Course Name</Label>
+              <Input
+                value={editingCourse?.name || ''}
+                onChange={(e) => editingCourse && setEditingCourse({...editingCourse, name: e.target.value})}
+                autoFocus
+              />
+            </div>
+            <div>
+              <Label>Fee</Label>
+              <Input
+                type="number"
+                value={editingCourse?.fee || ''}
+                onChange={(e) => editingCourse && setEditingCourse({...editingCourse, fee: parseFloat(e.target.value) || 0})}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="secondary" onClick={() => setEditingCourse(null)}>Cancel</Button>

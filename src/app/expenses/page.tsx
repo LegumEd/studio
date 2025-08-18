@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, ArrowUpRight, ArrowDownLeft, Scale } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -143,22 +143,31 @@ export default function ExpensesPage() {
       </div>
        <div className="grid gap-4 md:grid-cols-3">
         <Card>
-            <CardHeader className="pb-2">
-                <CardDescription>Total Income</CardDescription>
-                <CardTitle className="text-3xl text-green-600">₹{totalIncome.toLocaleString()}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+                <ArrowUpRight className="h-4 w-4 text-green-600" />
             </CardHeader>
+            <CardContent>
+                <div className="text-3xl font-bold text-green-600">₹{totalIncome.toLocaleString()}</div>
+            </CardContent>
         </Card>
         <Card>
-            <CardHeader className="pb-2">
-                <CardDescription>Total Expenses</CardDescription>
-                <CardTitle className="text-3xl text-red-600">₹{totalExpenses.toLocaleString()}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                <ArrowDownLeft className="h-4 w-4 text-red-600" />
             </CardHeader>
+            <CardContent>
+                <div className="text-3xl font-bold text-red-600">₹{totalExpenses.toLocaleString()}</div>
+            </CardContent>
         </Card>
         <Card>
-            <CardHeader className="pb-2">
-                <CardDescription>Net Balance</CardDescription>
-                <CardTitle className={`text-3xl ${netBalance >= 0 ? 'text-foreground' : 'text-red-600'}`}>₹{netBalance.toLocaleString()}</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+                <Scale className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
+            <CardContent>
+                <div className={`text-3xl font-bold ${netBalance >= 0 ? 'text-foreground' : 'text-red-600'}`}>₹{netBalance.toLocaleString()}</div>
+            </CardContent>
         </Card>
       </div>
       <Card>

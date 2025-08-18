@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, Target, Banknote, ArrowUpRight, ArrowDownLeft, Scale } from 'lucide-react';
+import { Users, BookOpen, Target, Scale, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 type Transaction = {
   type: "Income" | "Expense";

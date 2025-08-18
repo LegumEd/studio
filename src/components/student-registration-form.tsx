@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +26,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { paymentModes, type Student, type DocumentFile } from "@/lib/types";
+import { paymentModes, type Student, type DocumentFile, type Course } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar } from "@/components/ui/calendar";
@@ -53,7 +53,7 @@ const studentSchema = z.object({
 });
 
 interface StudentRegistrationFormProps {
-  courses: string[];
+  courses: Course[];
   onStudentAdd: (student: Omit<Student, 'id' | 'lastUpdated'>) => void;
   triggerButton: React.ReactNode;
 }
@@ -82,13 +82,27 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
     handleSubmit,
     control,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof studentSchema>>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
         paymentDate: format(new Date(), "yyyy-MM-dd"),
+        totalFee: 0,
     }
   });
+
+  const selectedCourseName = watch("course");
+
+  useEffect(() => {
+    if(selectedCourseName) {
+      const selectedCourse = courses.find(c => c.name === selectedCourseName);
+      if (selectedCourse) {
+        setValue("totalFee", selectedCourse.fee);
+      }
+    }
+  }, [selectedCourseName, courses, setValue]);
 
   const processSubmit = async (data: z.infer<typeof studentSchema>) => {
     try {
@@ -178,7 +192,15 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
                            </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                           <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")} initialFocus />
+                           <Calendar 
+                              mode="single" 
+                              selected={field.value ? new Date(field.value) : undefined} 
+                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                              captionLayout="dropdown-nav"
+                              fromYear={1960}
+                              toYear={new Date().getFullYear()}
+                              initialFocus
+                           />
                         </PopoverContent>
                      </Popover>
                   )}
@@ -201,7 +223,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
                       <SelectValue placeholder="Select a course" />
                     </SelectTrigger>
                     <SelectContent>
-                      {courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {courses.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 )}
@@ -210,7 +232,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
             </div>
             <div>
               <Label htmlFor="totalFee">Total Fee</Label>
-              <Input id="totalFee" {...register("totalFee")} type="number" />
+              <Input id="totalFee" {...register("totalFee")} type="number" readOnly className="bg-muted" />
               {errors.totalFee && <p className="text-destructive text-sm mt-1">{errors.totalFee.message}</p>}
             </div>
             <div>

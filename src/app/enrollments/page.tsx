@@ -21,14 +21,14 @@ import {
 import { PlusCircle } from "lucide-react";
 import StudentTable from "@/components/student-table";
 import StudentRegistrationForm from "@/components/student-registration-form";
-import type { Student } from "@/lib/types";
+import type { Student, Course } from "@/lib/types";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EnrollmentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [courses, setCourses] = useState<string[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("all");
   const { toast } = useToast();
@@ -44,7 +44,8 @@ export default function EnrollmentsPage() {
     });
     
     const coursesUnsubscribe = onSnapshot(collection(db, "courses"), (snapshot) => {
-      setCourses(snapshot.docs.map(doc => doc.data().name).sort());
+      const coursesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)).sort((a,b) => a.name.localeCompare(b.name));
+      setCourses(coursesData);
     });
 
     return () => {
@@ -127,8 +128,8 @@ export default function EnrollmentsPage() {
                     <SelectContent>
                         <SelectItem value="all">All Courses</SelectItem>
                         {courses.map((course) => (
-                            <SelectItem key={course} value={course}>
-                                {course}
+                            <SelectItem key={course.id} value={course.name}>
+                                {course.name}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -155,7 +156,7 @@ export default function EnrollmentsPage() {
             students={filteredStudents} 
             onUpdateStudent={updateStudent}
             onDeleteStudent={deleteStudent}
-            courses={courses}
+            courses={courses.map(c => c.name)}
           />
         </CardContent>
       </Card>
