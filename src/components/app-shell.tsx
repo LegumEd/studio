@@ -44,7 +44,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                      <div className="flex items-center gap-2 p-2">
                         <Scale className="h-8 w-8 text-sidebar-primary" />
                         <h1 className="text-xl font-headline font-semibold text-sidebar-primary group-data-[collapsible=icon]:hidden">
-                            Lex Legum Management
+                            Management
                         </h1>
                     </div>
                 </SidebarHeader>
