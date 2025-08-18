@@ -46,32 +46,123 @@ const handlePrintForm = (student: Student) => {
      const printContents = `
       <html>
         <head>
-          <title>Student Form</title>
-           <style>
-            body { font-family: sans-serif; margin: 20px; }
-            .container { border: 1px solid #ccc; padding: 20px; max-width: 800px; margin: auto; }
-            h1 { text-align: center; }
-            .profile-pic { float: right; width: 150px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 8px;}
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
+          <title>Student Profile - ${student.fullName}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+            body { 
+              font-family: 'Inter', sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f8f9fa;
+              -webkit-print-color-adjust: exact;
+            }
+            .page {
+              width: 210mm;
+              min-height: 297mm;
+              padding: 20mm;
+              margin: 10mm auto;
+              background: white;
+              box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #23395d;
+              padding-bottom: 10px;
+            }
+            .header h1 {
+              font-size: 24px;
+              color: #23395d;
+              margin: 0;
+            }
+            .header p {
+              font-size: 16px;
+              color: #555;
+              margin: 5px 0 0;
+            }
+            .profile-container {
+              display: flex;
+              gap: 20px;
+              align-items: flex-start;
+            }
+            .profile-pic-container {
+              width: 150px;
+              flex-shrink: 0;
+            }
+            .profile-pic {
+              width: 150px;
+              height: 180px;
+              object-fit: cover;
+              border: 4px solid #fff;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              border-radius: 8px;
+            }
+            .details-container {
+              flex-grow: 1;
+            }
+            .details-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 12px;
+            }
+            .detail-item {
+              background-color: #f0f2f5;
+              padding: 10px;
+              border-radius: 5px;
+              font-size: 14px;
+            }
+            .detail-item strong {
+              display: block;
+              color: #23395d;
+              margin-bottom: 4px;
+              font-weight: 500;
+            }
+            .detail-item.full-width {
+              grid-column: 1 / -1;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 12px;
+              color: #888;
+            }
+            @media print {
+              body, .page {
+                margin: 0;
+                box-shadow: none;
+              }
+            }
           </style>
         </head>
         <body>
-          <div class="container">
-            <h1>Lex Legum Academy - Student Profile</h1>
-            <img src="${student.photo || 'https://placehold.co/150x150.png'}" class="profile-pic" alt="student photo" />
-            <table>
-              <tr><th>Full Name</th><td>${student.fullName}</td></tr>
-              <tr><th>Father's Name</th><td>${student.fathersName}</td></tr>
-              <tr><th>Mobile</th><td>${student.mobile}</td></tr>
-              <tr><th>Date of Birth</th><td>${student.dob ? format(new Date(student.dob), "PPP") : ''}</td></tr>
-              <tr><th>Roll No.</th><td>${student.roll}</td></tr>
-              <tr><th>Course</th><td>${student.course}</td></tr>
-              <tr><th>Total Fee</th><td>₹${student.totalFee.toLocaleString()}</td></tr>
-              <tr><th>Amount Paid</th><td>₹${student.amountPaid.toLocaleString()}</td></tr>
-               <tr><th>Address</th><td>${student.address}</td></tr>
-            </table>
+          <div class="page">
+            <div class="header">
+              <h1>Lex Legum Academy</h1>
+              <p>Student Profile</p>
+            </div>
+            <div class="profile-container">
+              <div class="profile-pic-container">
+                <img src="${student.photo || 'https://placehold.co/150x180.png'}" class="profile-pic" alt="student photo" />
+              </div>
+              <div class="details-container">
+                <div class="details-grid">
+                  <div class="detail-item"><strong>Full Name</strong>${student.fullName}</div>
+                  <div class="detail-item"><strong>Father's Name</strong>${student.fathersName}</div>
+                  <div class="detail-item"><strong>Mobile</strong>${student.mobile}</div>
+                  <div class="detail-item"><strong>Date of Birth</strong>${student.dob ? format(new Date(student.dob), "PPP") : ''}</div>
+                  <div class="detail-item"><strong>Roll No.</strong>${student.roll}</div>
+                  <div class="detail-item"><strong>Course</strong>${student.course}</div>
+                  <div class="detail-item"><strong>Total Fee</strong>₹${student.totalFee.toLocaleString()}</div>
+                  <div class="detail-item"><strong>Amount Paid</strong>₹${student.amountPaid.toLocaleString()}</div>
+                  <div class="detail-item full-width"><strong>Address</strong>${student.address}</div>
+                </div>
+              </div>
+            </div>
+            <div class="footer">
+              This is a system-generated document.
+            </div>
           </div>
         </body>
       </html>
