@@ -65,6 +65,15 @@ const handlePrintForm = (student: Student) => {
               box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
               display: flex;
               flex-direction: column;
+              position: relative;
+            }
+             .student-id {
+                position: absolute;
+                top: 20mm;
+                right: 20mm;
+                font-size: 12px;
+                color: #555;
+                font-family: monospace;
             }
             .header {
               text-align: center;
@@ -136,8 +145,6 @@ const handlePrintForm = (student: Student) => {
                 padding-left: 20px;
                 font-size: 11px;
                 color: #333;
-                column-count: 2;
-                column-gap: 20px;
             }
              .rules-section li {
                 margin-bottom: 8px;
@@ -176,6 +183,7 @@ const handlePrintForm = (student: Student) => {
         </head>
         <body>
           <div class="page">
+            <div class="student-id">UID: ${student.id}</div>
             <div>
               <div class="header">
                 <h1>Lex Legum Academy</h1>
@@ -386,3 +394,4 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
     </>
   );
 }
+
