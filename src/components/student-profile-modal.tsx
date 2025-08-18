@@ -100,7 +100,36 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
   
   const handlePrintFeeSlip = (payment: Payment) => {
     const dueAmount = editedStudent.totalFee - editedStudent.amountPaid;
-    const slipHtml = `...`; // Fee slip HTML generation logic here
+    const slipHtml = `
+      <html>
+        <head>
+          <title>Fee Slip</title>
+          <style>
+            body { font-family: sans-serif; margin: 20px; }
+            .container { border: 1px solid #ccc; padding: 20px; width: 300px; }
+            h2 { text-align: center; margin-top: 0; }
+            p { margin: 5px 0; }
+            .label { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h2>Lex Legum Academy</h2>
+            <p><span class="label">Student:</span> ${editedStudent.fullName}</p>
+            <p><span class="label">Roll No:</span> ${editedStudent.roll}</p>
+            <p><span class="label">Course:</span> ${editedStudent.course}</p>
+            <hr/>
+            <p><span class="label">Date:</span> ${format(new Date(payment.date), "PPP")}</p>
+            <p><span class="label">Amount Paid:</span> ₹${payment.amount.toLocaleString()}</p>
+            <p><span class="label">Mode:</span> ${payment.mode}</p>
+            <hr/>
+             <p><span class="label">Total Fee:</span> ₹${editedStudent.totalFee.toLocaleString()}</p>
+            <p><span class="label">Total Paid:</span> ₹${editedStudent.amountPaid.toLocaleString()}</p>
+            <p><span class="label">Due Amount:</span> ₹${dueAmount.toLocaleString()}</p>
+          </div>
+        </body>
+      </html>
+    `;
     const win = window.open("", "FeeSlip");
     win?.document.write(slipHtml);
     win?.document.close();
@@ -108,7 +137,42 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
   }
   
   const handlePrintForm = () => {
-     // Print form logic here
+     const printContents = `
+      <html>
+        <head>
+          <title>Student Form</title>
+           <style>
+            body { font-family: sans-serif; margin: 20px; }
+            .container { border: 1px solid #ccc; padding: 20px; max-width: 800px; margin: auto; }
+            h1 { text-align: center; }
+            .profile-pic { float: right; width: 150px; height: 200px; object-fit: cover; border: 1px solid #ccc; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Lex Legum Academy - Student Profile</h1>
+            <img src="${editedStudent.photo || 'https://placehold.co/150x200.png'}" class="profile-pic" alt="student photo" />
+            <table>
+              <tr><td>Full Name</td><td>${editedStudent.fullName}</td></tr>
+              <tr><td>Father's Name</td><td>${editedStudent.fathersName}</td></tr>
+              <tr><td>Mobile</td><td>${editedStudent.mobile}</td></tr>
+              <tr><td>Date of Birth</td><td>${editedStudent.dob}</td></tr>
+              <tr><td>Roll No.</td><td>${editedStudent.roll}</td></tr>
+              <tr><td>Course</td><td>${editedStudent.course}</td></tr>
+              <tr><td>Total Fee</td><td>₹${editedStudent.totalFee.toLocaleString()}</td></tr>
+              <tr><td>Amount Paid</td><td>₹${editedStudent.amountPaid.toLocaleString()}</td></tr>
+               <tr><td>Address</td><td>${editedStudent.address}</td></tr>
+            </table>
+          </div>
+        </body>
+      </html>
+    `;
+    const win = window.open("", "Print Form");
+    win?.document.write(printContents);
+    win?.document.close();
+    win?.print();
   }
 
 
