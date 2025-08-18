@@ -98,7 +98,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
             photoData = photoFiles[0].data;
         }
 
-        let documentsData: DocumentFile[] | undefined = undefined;
+        let documentsData: DocumentFile[] = [];
         if (data.documents && data.documents.length > 0) {
             documentsData = await readFilesAsDataURL(data.documents);
         }
