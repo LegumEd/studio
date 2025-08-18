@@ -34,6 +34,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 
 const studentSchema = z.object({
@@ -41,7 +43,7 @@ const studentSchema = z.object({
   fathersName: z.string().min(2, "Father's name is required"),
   mobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
   dob: z.string().min(1, "Date of birth is required"),
-  roll: z.string().min(1, "Roll number is required"),
+  roll: z.string(), // Will be generated automatically
   course: z.string().min(1, "Course is required"),
   totalFee: z.coerce.number().min(0, "Total fee must be a positive number"),
   amountPaid: z.coerce.number().min(0, "Amount paid must be a positive number"),
@@ -74,6 +76,21 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
     return await Promise.all(filePromises);
 };
 
+const generateRollNumber = async (courseName: string): Promise<string> => {
+    if (!courseName) return "";
+    
+    const year = new Date().getFullYear().toString().slice(-2);
+    const courseCode = courseName.replace(/[^A-Z]/g, '').slice(0, 4).toUpperCase();
+    
+    const studentsRef = collection(db, "students");
+    const q = query(studentsRef, where("course", "==", courseName), where("enrollmentYear", "==", new Date().getFullYear()));
+    const querySnapshot = await getDocs(q);
+    const nextNumber = 5501 + querySnapshot.size;
+
+    return `LLA${courseCode}${year}${nextNumber}`;
+};
+
+
 export default function StudentRegistrationForm({ courses, onStudentAdd, triggerButton }: StudentRegistrationFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -90,18 +107,27 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
     defaultValues: {
         paymentDate: format(new Date(), "yyyy-MM-dd"),
         totalFee: 0,
+        roll: "",
     }
   });
 
   const selectedCourseName = watch("course");
 
   useEffect(() => {
-    if(selectedCourseName) {
-      const selectedCourse = courses.find(c => c.name === selectedCourseName);
-      if (selectedCourse) {
-        setValue("totalFee", selectedCourse.fee);
-      }
+    const setCourseDetails = async () => {
+        if(selectedCourseName) {
+            const selectedCourse = courses.find(c => c.name === selectedCourseName);
+            if (selectedCourse) {
+                setValue("totalFee", selectedCourse.fee);
+                const roll = await generateRollNumber(selectedCourseName);
+                setValue("roll", roll);
+            }
+        } else {
+            setValue("totalFee", 0);
+            setValue("roll", "");
+        }
     }
+    setCourseDetails();
   }, [selectedCourseName, courses, setValue]);
 
   const processSubmit = async (data: z.infer<typeof studentSchema>) => {
@@ -112,21 +138,21 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
             photoData = photoFiles[0].data;
         }
 
-        let documentsData: DocumentFile[] = [];
-        if (data.documents && data.documents.length > 0) {
-            documentsData = await readFilesAsDataURL(data.documents);
-        }
+        const documentsData: DocumentFile[] = (data.documents && data.documents.length > 0)
+            ? await readFilesAsDataURL(data.documents)
+            : [];
         
         const newStudent: Omit<Student, 'id' | 'lastUpdated'> = {
             ...data,
+            enrollmentYear: new Date().getFullYear(),
             photo: photoData,
             documents: documentsData,
-            paymentHistory: [{
+            paymentHistory: data.amountPaid > 0 ? [{
                 amount: data.amountPaid,
                 mode: data.paymentMode,
                 date: data.paymentDate,
                 timestamp: new Date().toISOString()
-            }]
+            }] : []
         };
 
         onStudentAdd(newStudent);
@@ -139,9 +165,10 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
         reset();
         setIsOpen(false);
     } catch (error) {
+        console.error("Error adding student:", error);
         toast({
             title: "Error",
-            description: "Failed to add student.",
+            description: "Failed to add student. Check console for details.",
             variant: "destructive",
         });
     }
@@ -207,18 +234,13 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
                />
               {errors.dob && <p className="text-destructive text-sm mt-1">{errors.dob.message}</p>}
             </div>
-            <div>
-              <Label htmlFor="roll">Roll Number</Label>
-              <Input id="roll" {...register("roll")} />
-              {errors.roll && <p className="text-destructive text-sm mt-1">{errors.roll.message}</p>}
-            </div>
-            <div>
+             <div>
               <Label htmlFor="course">Course Enrolled</Label>
               <Controller
                 name="course"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} defaultValue="">
                     <SelectTrigger>
                       <SelectValue placeholder="Select a course" />
                     </SelectTrigger>
@@ -231,13 +253,18 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
               {errors.course && <p className="text-destructive text-sm mt-1">{errors.course.message}</p>}
             </div>
             <div>
+              <Label htmlFor="roll">Roll Number</Label>
+              <Input id="roll" {...register("roll")} readOnly className="bg-muted" />
+              {errors.roll && <p className="text-destructive text-sm mt-1">{errors.roll.message}</p>}
+            </div>
+            <div>
               <Label htmlFor="totalFee">Total Fee</Label>
               <Input id="totalFee" {...register("totalFee")} type="number" readOnly className="bg-muted" />
               {errors.totalFee && <p className="text-destructive text-sm mt-1">{errors.totalFee.message}</p>}
             </div>
             <div>
               <Label htmlFor="amountPaid">Amount Paid</Label>
-              <Input id="amountPaid" {...register("amountPaid")} type="number" />
+              <Input id="amountPaid" {...register("amountPaid")} type="number" defaultValue={0} />
               {errors.amountPaid && <p className="text-destructive text-sm mt-1">{errors.amountPaid.message}</p>}
             </div>
             <div>
@@ -245,8 +272,9 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
               <Controller
                 name="paymentMode"
                 control={control}
+                defaultValue="Cash"
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select payment mode" />
                     </SelectTrigger>
@@ -310,3 +338,4 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
     </Dialog>
   );
 }
+

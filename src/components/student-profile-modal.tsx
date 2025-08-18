@@ -24,6 +24,7 @@ interface StudentProfileModalProps {
   student: Student;
   onUpdateStudent: (student: Student) => void;
   courses: string[];
+  onPrintForm: (student: Student) => void;
 }
 
 const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
@@ -43,7 +44,7 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
 };
 
 
-export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses }: StudentProfileModalProps) {
+export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses, onPrintForm }: StudentProfileModalProps) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
   const [newPayment, setNewPayment] = useState({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   const { toast } = useToast();
@@ -139,45 +140,6 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     win?.document.close();
     win?.print();
   }
-  
-  const handlePrintForm = () => {
-     const printContents = `
-      <html>
-        <head>
-          <title>Student Form</title>
-           <style>
-            body { font-family: sans-serif; margin: 20px; }
-            .container { border: 1px solid #ccc; padding: 20px; max-width: 800px; margin: auto; }
-            h1 { text-align: center; }
-            .profile-pic { float: right; width: 150px; height: 200px; object-fit: cover; border: 1px solid #ccc; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>Lex Legum Academy - Student Profile</h1>
-            <img src="${editedStudent.photo || 'https://placehold.co/150x200.png'}" class="profile-pic" alt="student photo" />
-            <table>
-              <tr><td>Full Name</td><td>${editedStudent.fullName}</td></tr>
-              <tr><td>Father's Name</td><td>${editedStudent.fathersName}</td></tr>
-              <tr><td>Mobile</td><td>${editedStudent.mobile}</td></tr>
-              <tr><td>Date of Birth</td><td>${editedStudent.dob}</td></tr>
-              <tr><td>Roll No.</td><td>${editedStudent.roll}</td></tr>
-              <tr><td>Course</td><td>${editedStudent.course}</td></tr>
-              <tr><td>Total Fee</td><td>₹${editedStudent.totalFee.toLocaleString()}</td></tr>
-              <tr><td>Amount Paid</td><td>₹${editedStudent.amountPaid.toLocaleString()}</td></tr>
-               <tr><td>Address</td><td>${editedStudent.address}</td></tr>
-            </table>
-          </div>
-        </body>
-      </html>
-    `;
-    const win = window.open("", "Print Form");
-    win?.document.write(printContents);
-    win?.document.close();
-    win?.print();
-  }
 
 
   return (
@@ -205,7 +167,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                     <p className="text-xl font-semibold text-red-600">₹{(editedStudent.totalFee - editedStudent.amountPaid).toLocaleString()}</p>
                 </div>
                  <Button onClick={handleSave} className="w-full"><Save className="mr-2 h-4 w-4" /> Save Changes</Button>
-                 <Button onClick={handlePrintForm} variant="secondary" className="w-full"><Printer className="mr-2 h-4 w-4" /> Print Form</Button>
+                 <Button onClick={() => onPrintForm(editedStudent)} variant="secondary" className="w-full"><Printer className="mr-2 h-4 w-4" /> Print Form</Button>
             </div>
             <div className="w-3/4">
                 <Tabs defaultValue="profile" className="w-full h-full flex flex-col">
@@ -221,15 +183,15 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                             <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
                             <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
                             <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
-                            <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} /></div>
+                            <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
                             <div>
                                 <Label htmlFor="course">Course</Label>
-                                <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)}>
+                                <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)} disabled>
                                     <SelectTrigger><SelectValue/></SelectTrigger>
                                     <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
-                            <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} /></div>
+                            <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} readOnly className="bg-muted" /></div>
                             <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
                         </div>
                     </TabsContent>

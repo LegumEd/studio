@@ -16,10 +16,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Printer } from "lucide-react";
 import type { Student } from "@/lib/types";
 import StudentProfileModal from "./student-profile-modal";
 import {
@@ -32,12 +33,53 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { format } from "date-fns";
 
 interface StudentTableProps {
   students: Student[];
   courses: string[];
   onUpdateStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
+}
+
+const handlePrintForm = (student: Student) => {
+     const printContents = `
+      <html>
+        <head>
+          <title>Student Form</title>
+           <style>
+            body { font-family: sans-serif; margin: 20px; }
+            .container { border: 1px solid #ccc; padding: 20px; max-width: 800px; margin: auto; }
+            h1 { text-align: center; }
+            .profile-pic { float: right; width: 150px; height: 150px; object-fit: cover; border: 1px solid #ccc; border-radius: 8px;}
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Lex Legum Academy - Student Profile</h1>
+            <img src="${student.photo || 'https://placehold.co/150x150.png'}" class="profile-pic" alt="student photo" />
+            <table>
+              <tr><th>Full Name</th><td>${student.fullName}</td></tr>
+              <tr><th>Father's Name</th><td>${student.fathersName}</td></tr>
+              <tr><th>Mobile</th><td>${student.mobile}</td></tr>
+              <tr><th>Date of Birth</th><td>${student.dob ? format(new Date(student.dob), "PPP") : ''}</td></tr>
+              <tr><th>Roll No.</th><td>${student.roll}</td></tr>
+              <tr><th>Course</th><td>${student.course}</td></tr>
+              <tr><th>Total Fee</th><td>₹${student.totalFee.toLocaleString()}</td></tr>
+              <tr><th>Amount Paid</th><td>₹${student.amountPaid.toLocaleString()}</td></tr>
+               <tr><th>Address</th><td>${student.address}</td></tr>
+            </table>
+          </div>
+        </body>
+      </html>
+    `;
+    const win = window.open("", "Print Form");
+    win?.document.write(printContents);
+    win?.document.close();
+    win?.print();
 }
 
 export default function StudentTable({ students, courses, onUpdateStudent, onDeleteStudent }: StudentTableProps) {
@@ -126,7 +168,12 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(student.id)} className="text-destructive">Delete</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handlePrintForm(student)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print Form
+                          </DropdownMenuItem>
+                           <DropdownMenuSeparator />
+                          <DropdownMenuItem onSelect={() => handleDeleteClick(student.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -153,6 +200,7 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
                 setSelectedStudent(s); // Keep modal updated with latest data
             }}
             courses={courses}
+            onPrintForm={handlePrintForm}
         />
       )}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
