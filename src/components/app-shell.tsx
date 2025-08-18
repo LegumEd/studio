@@ -23,10 +23,14 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
     const { toast } = useToast();
 
     useEffect(() => {
-        toast({
-            title: "Welcome to Lex Legum Academy!",
-            description: "Your student management hub.",
-        });
+        const hasWelcomed = sessionStorage.getItem('welcomeToastShown');
+        if (!hasWelcomed) {
+            toast({
+                title: "Welcome to Lex Legum Academy!",
+                description: "Your student management hub.",
+            });
+            sessionStorage.setItem('welcomeToastShown', 'true');
+        }
     }, [toast]);
 
     const menuItems = [
