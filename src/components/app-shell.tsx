@@ -1,7 +1,7 @@
 
 "use client"
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BookUser, HandCoins, Settings, Target, Scale, LayoutDashboard } from 'lucide-react';
@@ -16,9 +16,18 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import Header from './header';
+import { useToast } from "@/hooks/use-toast";
 
 const AppShell = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        toast({
+            title: "Welcome to Lex Legum Academy!",
+            description: "Your student management hub.",
+        });
+    }, [toast]);
 
     const menuItems = [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,7 +44,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
                      <div className="flex items-center gap-2 p-2">
                         <Scale className="h-8 w-8 text-sidebar-primary" />
                         <h1 className="text-xl font-headline font-semibold text-sidebar-primary group-data-[collapsible=icon]:hidden">
-                            Lex Legum Academy
+                            Lex Legum Management
                         </h1>
                     </div>
                 </SidebarHeader>
