@@ -80,14 +80,15 @@ const generateRollNumber = async (courseName: string): Promise<string> => {
     if (!courseName) return "";
     
     const year = new Date().getFullYear().toString().slice(-2);
-    const courseCode = courseName.replace(/[^A-Z]/g, '').slice(0, 4).toUpperCase();
+    const courseCode = courseName.split(' ').map(word => word[0]).join('').slice(0, 4).toUpperCase();
     
     const studentsRef = collection(db, "students");
     const q = query(studentsRef, where("course", "==", courseName), where("enrollmentYear", "==", new Date().getFullYear()));
     const querySnapshot = await getDocs(q);
-    const nextNumber = 5501 + querySnapshot.size;
+    const nextNumber = 1 + querySnapshot.size;
+    const paddedNumber = String(nextNumber).padStart(4, '0');
 
-    return `LLA${courseCode}${year}${nextNumber}`;
+    return `LLA${courseCode}${year}${paddedNumber}`;
 };
 
 
@@ -338,4 +339,3 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
     </Dialog>
   );
 }
-
