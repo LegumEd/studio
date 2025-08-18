@@ -63,6 +63,8 @@ const handlePrintForm = (student: Student) => {
               margin: 10mm auto;
               background: white;
               box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+              display: flex;
+              flex-direction: column;
             }
             .header {
               text-align: center;
@@ -120,9 +122,43 @@ const handlePrintForm = (student: Student) => {
             .detail-item.full-width {
               grid-column: 1 / -1;
             }
+            .rules-section {
+                margin-top: 20px;
+                padding-top: 15px;
+                border-top: 1px solid #ddd;
+            }
+            .rules-section h3 {
+                font-size: 16px;
+                color: #23395d;
+                margin-bottom: 10px;
+            }
+            .rules-section ol {
+                padding-left: 20px;
+                font-size: 12px;
+                color: #333;
+            }
+             .rules-section li {
+                margin-bottom: 5px;
+            }
+            .signature-section {
+                display: flex;
+                justify-content: space-between;
+                margin-top: auto; /* Pushes to the bottom */
+                padding-top: 40px;
+            }
+            .signature-box {
+                width: 45%;
+                text-align: center;
+                font-size: 14px;
+            }
+            .signature-line {
+                border-top: 1px solid #333;
+                margin-top: 40px;
+                padding-top: 5px;
+            }
             .footer {
               text-align: center;
-              margin-top: 40px;
+              margin-top: 20px;
               padding-top: 20px;
               border-top: 1px solid #ddd;
               font-size: 12px;
@@ -138,31 +174,52 @@ const handlePrintForm = (student: Student) => {
         </head>
         <body>
           <div class="page">
-            <div class="header">
-              <h1>Lex Legum Academy</h1>
-              <p>Student Profile</p>
-            </div>
-            <div class="profile-container">
-              <div class="profile-pic-container">
-                <img src="${student.photo || 'https://placehold.co/150x180.png'}" class="profile-pic" alt="student photo" />
+            <div>
+              <div class="header">
+                <h1>Lex Legum Academy</h1>
+                <p>Student Profile</p>
               </div>
-              <div class="details-container">
-                <div class="details-grid">
-                  <div class="detail-item"><strong>Full Name</strong>${student.fullName}</div>
-                  <div class="detail-item"><strong>Father's Name</strong>${student.fathersName}</div>
-                  <div class="detail-item"><strong>Mobile</strong>${student.mobile}</div>
-                  <div class="detail-item"><strong>Date of Birth</strong>${student.dob ? format(new Date(student.dob), "PPP") : ''}</div>
-                  <div class="detail-item"><strong>Roll No.</strong>${student.roll}</div>
-                  <div class="detail-item"><strong>Course</strong>${student.course}</div>
-                  <div class="detail-item"><strong>Total Fee</strong>₹${student.totalFee.toLocaleString()}</div>
-                  <div class="detail-item"><strong>Amount Paid</strong>₹${student.amountPaid.toLocaleString()}</div>
-                  <div class="detail-item full-width"><strong>Address</strong>${student.address}</div>
+              <div class="profile-container">
+                <div class="profile-pic-container">
+                  <img src="${student.photo || 'https://placehold.co/150x180.png'}" class="profile-pic" alt="student photo" />
+                </div>
+                <div class="details-container">
+                  <div class="details-grid">
+                    <div class="detail-item"><strong>Full Name</strong>${student.fullName}</div>
+                    <div class="detail-item"><strong>Father's Name</strong>${student.fathersName}</div>
+                    <div class="detail-item"><strong>Mobile</strong>${student.mobile}</div>
+                    <div class="detail-item"><strong>Date of Birth</strong>${student.dob ? format(new Date(student.dob), "PPP") : ''}</div>
+                    <div class="detail-item"><strong>Roll No.</strong>${student.roll}</div>
+                    <div class="detail-item"><strong>Course</strong>${student.course}</div>
+                    <div class="detail-item"><strong>Total Fee</strong>₹${student.totalFee.toLocaleString()}</div>
+                    <div class="detail-item"><strong>Amount Paid</strong>₹${student.amountPaid.toLocaleString()}</div>
+                    <div class="detail-item full-width"><strong>Address</strong>${student.address}</div>
+                  </div>
                 </div>
               </div>
+              <div class="rules-section">
+                <h3>Rules and Procedures</h3>
+                <ol>
+                    <li>Fee once paid is not refundable or adjustable under any circumstances.</li>
+                    <li>Students must maintain discipline and decorum within the academy premises. Any misconduct will result in disciplinary action.</li>
+                    <li>The course must be completed within the specified duration. The academy is not responsible for providing classes if the student is absent.</li>
+                    <li>All disputes, if any, shall be subject to the exclusive jurisdiction of the courts in Ghaziabad only.</li>
+                    <li>Any disputes shall be resolved through arbitration.</li>
+                </ol>
+              </div>
             </div>
-            <div class="footer">
-              This is a system-generated document.
+
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line">Student's Signature</div>
+                    <div>Name (in Hindi): ..........................</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line">Authorised Signatory</div>
+                    <div>Mohd Suhail</div>
+                </div>
             </div>
+
           </div>
         </body>
       </html>
