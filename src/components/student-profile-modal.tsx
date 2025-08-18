@@ -183,6 +183,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                             <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
                             <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
                             <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
+                            <div><Label htmlFor="enrollmentDate">Date of Enrollment</Label><Input id="enrollmentDate" type="date" value={editedStudent.enrollmentDate} onChange={handleInputChange} /></div>
                             <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
                             <div>
                                 <Label htmlFor="course">Course</Label>

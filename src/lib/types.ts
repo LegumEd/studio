@@ -23,6 +23,7 @@ export interface Student {
   roll: string;
   course: string;
   enrollmentYear: number;
+  enrollmentDate: string;
   totalFee: number;
   amountPaid: number;
   paymentMode: "Cash" | "UPI" | "Bank Transfer";

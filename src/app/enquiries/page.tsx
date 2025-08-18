@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -148,6 +148,60 @@ export default function EnquiriesPage() {
     setIsAlertOpen(false);
     setEnquiryToDelete(null);
   };
+  
+  const handlePrint = () => {
+    const printContents = `
+      <html>
+        <head>
+          <title>Enquiries Report</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; margin: 20px; }
+            h1 { text-align: center; color: #23395d; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .no-print { display: none; }
+          </style>
+        </head>
+        <body>
+          <h1>Enquiries Report</h1>
+          <p><strong>Date:</strong> ${format(new Date(), "PPP")}</p>
+          <p><strong>Status Filter:</strong> ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}</p>
+          <p><strong>Total Enquiries:</strong> ${filteredEnquiries.length}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Course</th>
+                <th>Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredEnquiries.map(e => `
+                <tr>
+                  <td>${format(new Date(e.enquiryDate), "dd/MM/yyyy")}</td>
+                  <td>${e.name}</td>
+                  <td>${e.mobile}</td>
+                  <td>${e.course}</td>
+                  <td>${e.status}</td>
+                  <td>${e.notes || ''}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+    const win = window.open("", "Print");
+    win?.document.write(printContents);
+    win?.document.close();
+    win?.print();
+  }
+
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -177,6 +231,12 @@ export default function EnquiriesPage() {
                 </Select>
               </div>
               <div className="ml-auto flex items-center gap-2">
+                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handlePrint}>
+                    <Printer className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Print Report
+                    </span>
+                 </Button>
                  <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

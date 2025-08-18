@@ -29,11 +29,7 @@ import * as z from "zod";
 import { paymentModes, type Student, type DocumentFile, type Course } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -43,6 +39,7 @@ const studentSchema = z.object({
   fathersName: z.string().min(2, "Father's name is required"),
   mobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
   dob: z.string().min(1, "Date of birth is required"),
+  enrollmentDate: z.string(),
   roll: z.string(), // Will be generated automatically
   course: z.string().min(1, "Course is required"),
   totalFee: z.coerce.number().min(0, "Total fee must be a positive number"),
@@ -107,6 +104,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
     resolver: zodResolver(studentSchema),
     defaultValues: {
         paymentDate: format(new Date(), "yyyy-MM-dd"),
+        enrollmentDate: format(new Date(), "yyyy-MM-dd"),
         totalFee: 0,
         roll: "",
     }
@@ -145,7 +143,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
         
         const newStudent: Omit<Student, 'id' | 'lastUpdated'> = {
             ...data,
-            enrollmentYear: new Date().getFullYear(),
+            enrollmentYear: new Date(data.enrollmentDate).getFullYear(),
             photo: photoData,
             documents: documentsData,
             paymentHistory: data.amountPaid > 0 ? [{
@@ -205,35 +203,13 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
             </div>
             <div>
               <Label htmlFor="dob">Date of Birth</Label>
-               <Controller
-                  name="dob"
-                  control={control}
-                  render={({ field }) => (
-                     <Popover>
-                        <PopoverTrigger asChild>
-                           <Button
-                              variant={"outline"}
-                              className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
-                           >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
-                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                           <Calendar 
-                              mode="single" 
-                              selected={field.value ? new Date(field.value) : undefined} 
-                              onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
-                              captionLayout="dropdown-nav"
-                              fromYear={1960}
-                              toYear={new Date().getFullYear()}
-                              initialFocus
-                           />
-                        </PopoverContent>
-                     </Popover>
-                  )}
-               />
+              <Input id="dob" {...register("dob")} type="date" />
               {errors.dob && <p className="text-destructive text-sm mt-1">{errors.dob.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="enrollmentDate">Date of Enrollment</Label>
+              <Input id="enrollmentDate" {...register("enrollmentDate")} type="date" />
+              {errors.enrollmentDate && <p className="text-destructive text-sm mt-1">{errors.enrollmentDate.message}</p>}
             </div>
              <div>
               <Label htmlFor="course">Course Enrolled</Label>
@@ -289,26 +265,7 @@ export default function StudentRegistrationForm({ courses, onStudentAdd, trigger
             </div>
             <div>
               <Label htmlFor="paymentDate">Payment Date</Label>
-                <Controller
-                  name="paymentDate"
-                  control={control}
-                  render={({ field }) => (
-                     <Popover>
-                        <PopoverTrigger asChild>
-                           <Button
-                              variant={"outline"}
-                              className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
-                           >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
-                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                           <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")} initialFocus />
-                        </PopoverContent>
-                     </Popover>
-                  )}
-               />
+              <Input id="paymentDate" {...register("paymentDate")} type="date" />
               {errors.paymentDate && <p className="text-destructive text-sm mt-1">{errors.paymentDate.message}</p>}
             </div>
              <div className="md:col-span-2">

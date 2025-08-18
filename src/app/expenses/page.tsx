@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, PlusCircle, ArrowUpRight, ArrowDownLeft, Scale } from "lucide-react";
+import { MoreHorizontal, PlusCircle, ArrowUpRight, ArrowDownLeft, Scale, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -135,6 +135,82 @@ export default function ExpensesPage() {
     setIsAlertOpen(false);
     setTransactionToDelete(null);
   };
+  
+  const handlePrint = () => {
+    const printContents = `
+      <html>
+        <head>
+          <title>Transactions Report</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #23395d; padding-bottom: 10px; }
+            h1 { color: #23395d; margin: 0; }
+            .summary { display: flex; justify-content: space-around; margin: 20px 0; padding: 10px; background-color: #f8f9fa; border-radius: 8px; }
+            .summary-item { text-align: center; }
+            .summary-item p { margin: 0; font-size: 14px; color: #555; }
+            .summary-item h3 { margin: 5px 0 0; font-size: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .income { color: green; }
+            .expense { color: red; }
+            .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #888; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Lex Legum Academy</h1>
+            <p>Transactions Report</p>
+          </div>
+          <div class="summary">
+            <div class="summary-item">
+              <p>Total Income</p>
+              <h3 class="income">₹${totalIncome.toLocaleString()}</h3>
+            </div>
+            <div class="summary-item">
+              <p>Total Expenses</p>
+              <h3 class="expense">₹${totalExpenses.toLocaleString()}</h3>
+            </div>
+            <div class="summary-item">
+              <p>Net Balance</p>
+              <h3 style="color: ${netBalance >= 0 ? 'green' : 'red'};">₹${netBalance.toLocaleString()}</h3>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredTransactions.map(t => `
+                <tr>
+                  <td>${format(new Date(t.date), "PPP")}</td>
+                  <td>${t.description}</td>
+                  <td>${t.category}</td>
+                  <td><span class="${t.type === 'Income' ? 'income' : 'expense'}">${t.type}</span></td>
+                  <td style="text-align: right;" class="${t.type === 'Income' ? 'income' : 'expense'}">${t.type === 'Income' ? '+' : '-'}₹${t.amount.toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="footer">
+            <p>Report generated on ${format(new Date(), "PPP")}</p>
+          </div>
+        </body>
+      </html>
+    `;
+    const win = window.open("", "Print");
+    win?.document.write(printContents);
+    win?.document.close();
+    win?.print();
+  }
+
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -188,6 +264,12 @@ export default function ExpensesPage() {
                 </Select>
               </div>
               <div className="ml-auto flex items-center gap-2">
+                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handlePrint}>
+                    <Printer className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Print Report
+                    </span>
+                 </Button>
                  <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
