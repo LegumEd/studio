@@ -211,25 +211,6 @@ const handlePrintForm = (student: Student) => {
                 <h3>Rules and Procedures</h3>
                 <ol>
                     <li>Fee once paid is not refundable or adjustable under any circumstances.</li>
-                    <li>All fees must be paid by the specified due dates. A late fee will be charged for delayed payments.</li>
-                    <li>Students must maintain a minimum of 75% attendance to be eligible for final examinations.</li>
-                    <li>The course must be completed within the specified duration. The academy is not responsible for providing make-up classes for student absenteeism.</li>
-                    <li>Students must maintain discipline and decorum within the academy premises. Any misconduct may result in disciplinary action, including suspension or expulsion.</li>
-                    <li>Respect for faculty, staff, and fellow students is mandatory at all times.</li>
-                    <li>Bullying, ragging, or any form of harassment is strictly prohibited and will lead to immediate expulsion.</li>
-                    <li>Use of mobile phones is not permitted in classrooms, library, or labs unless explicitly allowed by the instructor.</li>
-                    <li>Students are responsible for the safekeeping of their personal belongings. The academy is not liable for any loss or damage.</li>
-                    <li>Any damage to academy property will be recovered from the student(s) responsible.</li>
-                    <li>Students must carry their official ID card at all times within the academy premises.</li>
-                    <li>The academy reserves the right to revise the course structure, schedule, and fees without prior notice.</li>
-                    <li>Leave of absence must be sanctioned in advance from the appropriate authority, except in medical emergencies.</li>
-                    <li>Requests for change of batch or course are subject to availability and management's discretion. An administrative fee may apply.</li>
-                    <li>Internal assessments and mock tests are compulsory. Performance in these will be considered for internal grading.</li>
-                    <li>Cheating or any form of malpractice during examinations will result in a zero grade for that exam and may lead to further disciplinary action.</li>
-                    <li>Study material provided by the academy is for the student's personal use only and may not be reproduced or distributed.</li>
-                    <li>The academy's official communication channels (notice board, portal, SMS) must be checked regularly for updates.</li>
-                    <li>All disputes, if any, shall be subject to the exclusive jurisdiction of the courts in Ghaziabad only.</li>
-                    <li>Any dispute that cannot be resolved amicably shall be settled through arbitration as per the rules of the academy.</li>
                 </ol>
               </div>
             </div>
@@ -394,4 +375,5 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
     </>
   );
 }
+
 
