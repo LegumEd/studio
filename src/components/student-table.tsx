@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Printer, DollarSign } from "lucide-react";
-import type { Student } from "@/lib/types";
+import type { Student, Payment } from "@/lib/types";
 import StudentProfileModal from "./student-profile-modal";
 import {
     AlertDialog,
@@ -42,7 +42,7 @@ interface StudentTableProps {
   onDeleteStudent: (studentId: string) => void;
 }
 
-const handlePrintForm = (student: Student) => {
+const handlePrintForm = (student: Student, paymentHistory: Payment[]) => {
      const printContents = `
       <html>
         <head>
@@ -123,17 +123,30 @@ const handlePrintForm = (student: Student) => {
             .detail-item.full-width {
               grid-column: 1 / -1;
             }
-            .rules-section {
+            .section {
                 margin-top: 20px;
                 padding-top: 15px;
                 border-top: 1px solid #ddd;
             }
-            .rules-section h3 {
+            .section h3 {
                 font-size: 16px;
                 color: #23395d;
                 margin-bottom: 10px;
             }
-            .rules-section ol {
+            .section table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 12px;
+            }
+            .section th, .section td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .section th {
+                background-color: #f2f2f2;
+            }
+            .section ol {
                 padding-left: 20px;
                 font-size: 12px;
                 color: #333;
@@ -141,7 +154,7 @@ const handlePrintForm = (student: Student) => {
                 -webkit-column-count: 1;
                 column-count: 1;
             }
-             .rules-section li {
+             .section li {
                 margin-bottom: 8px;
             }
             .signature-section {
@@ -201,7 +214,32 @@ const handlePrintForm = (student: Student) => {
                   </div>
                 </div>
               </div>
-              <div class="rules-section">
+              
+              ${paymentHistory.length > 0 ? `
+              <div class="section">
+                <h3>Payment History</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${paymentHistory.map(p => `
+                      <tr>
+                        <td>${format(new Date(p.date), 'PPP')}</td>
+                        <td>₹${p.amount.toLocaleString()}</td>
+                        <td>${p.mode}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              ` : ''}
+
+              <div class="section">
                 <h3>Rules and Procedures</h3>
                 <ol>
                     <li>Fee once paid is not refundable or adjustable under any circumstances.</li>
@@ -337,7 +375,7 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
                             <DollarSign className="mr-2 h-4 w-4" />
                             Deposit Fee
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handlePrintForm(student)}>
+                          <DropdownMenuItem onSelect={() => handlePrintForm(student, student.paymentHistory || [])}>
                             <Printer className="mr-2 h-4 w-4" />
                             Print Form
                           </DropdownMenuItem>
@@ -370,7 +408,7 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
             }}
             courses={courses}
             onPrintForm={handlePrintForm}
-            defaultTab={defaultTab}
+            defaultTab={defaultTab as "profile" | "payments" | "documents"}
         />
       )}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
