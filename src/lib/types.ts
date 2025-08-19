@@ -12,6 +12,7 @@ export interface Payment {
   mode: "Cash" | "UPI" | "Bank Transfer";
   date: string;
   timestamp: string;
+  collectedBy: string;
 }
 
 export interface Student {

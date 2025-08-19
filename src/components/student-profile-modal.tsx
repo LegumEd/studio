@@ -66,7 +66,7 @@ const toWords = (num: number): string => {
 
 export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses, onPrintForm, defaultTab = "profile" }: StudentProfileModalProps) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
-  const [newPayment, setNewPayment] = useState({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
+  const [newPayment, setNewPayment] = useState({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd'), collectedBy: 'Admin' });
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -103,12 +103,17 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
         toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
         return;
     }
+    if (!newPayment.collectedBy.trim()) {
+        toast({ title: "Error", description: "Please enter who collected the fee.", variant: "destructive"});
+        return;
+    }
 
     const payment: Payment = {
         amount,
         mode: newPayment.mode as Payment['mode'],
         date: newPayment.date,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        collectedBy: newPayment.collectedBy,
     };
     
     const updatedStudent: Student = {
@@ -136,13 +141,13 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
         toast({ title: "Warning", description: "Payment was saved to student, but failed to record as income.", variant: "destructive" });
     }
 
-    setNewPayment({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
+    setNewPayment({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd'), collectedBy: 'Admin' });
   };
   
  const handlePrintFeeSlip = (payment: Payment) => {
     const slipId = new Date(payment.timestamp).getTime().toString().slice(-6);
     const paymentDate = new Date(payment.date);
-    const paymentTime = new Date(payment.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    const paymentTime = new Date(payment.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     
     const slipHtml = `
       <html>
@@ -287,7 +292,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                 <div>- Fee once paid is non-refundable.</div>
                 <br />
                 <br />
-                <div>Prepared By: Admin</div>
+                <div>Prepared By: ${payment.collectedBy}</div>
             </div>
 
           </div>
@@ -359,7 +364,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                         </TabsContent>
                         <TabsContent value="payments" className="h-full flex-1 flex flex-col overflow-hidden">
                             <div className="flex flex-col h-full">
-                                <div className="grid grid-cols-3 gap-4 mb-4 p-4 border rounded-lg">
+                                <div className="grid grid-cols-2 gap-4 mb-4 p-4 border rounded-lg">
                                     <div><Label>Amount</Label><Input type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: e.target.value}))} /></div>
                                     <div>
                                         <Label>Mode</Label>
@@ -369,12 +374,13 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                         </Select>
                                     </div>
                                     <div><Label>Date</Label><Input type="date" value={newPayment.date} onChange={e => setNewPayment(p => ({...p, date: e.target.value}))} /></div>
-                                    <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment & Record Income</Button></div>
+                                     <div><Label>Collected By</Label><Input value={newPayment.collectedBy} onChange={e => setNewPayment(p => ({...p, collectedBy: e.target.value}))} /></div>
+                                    <div className="col-span-2"><Button onClick={handleAddPayment} className="w-full">Add Payment & Record Income</Button></div>
                                 </div>
                                 <div className="flex-1 rounded-md border overflow-hidden">
                                     <ScrollArea className="h-full">
                                         <Table>
-                                            <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead>Collected By</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {editedStudent.paymentHistory?.length ? (
                                                     editedStudent.paymentHistory?.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((p, i) => (
@@ -382,12 +388,13 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                                             <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
                                                             <TableCell>₹{p.amount.toLocaleString()}</TableCell>
                                                             <TableCell>{p.mode}</TableCell>
+                                                            <TableCell>{p.collectedBy}</TableCell>
                                                             <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
                                                         </TableRow>
                                                     ))
                                                 ) : (
                                                     <TableRow>
-                                                        <TableCell colSpan={4} className="h-24 text-center">No payment history.</TableCell>
+                                                        <TableCell colSpan={5} className="h-24 text-center">No payment history.</TableCell>
                                                     </TableRow>
                                                 )}
                                             </TableBody>
