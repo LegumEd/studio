@@ -377,7 +377,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                             <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {editedStudent.paymentHistory?.length ? (
-                                                    editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
+                                                    editedStudent.paymentHistory?.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((p, i) => (
                                                         <TableRow key={i}>
                                                             <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
                                                             <TableCell>₹{p.amount.toLocaleString()}</TableCell>
@@ -409,6 +409,8 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     </Dialog>
   );
 }
+
+    
 
     
 
