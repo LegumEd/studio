@@ -257,7 +257,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
           <DialogTitle className="font-headline text-3xl">{student.fullName}</DialogTitle>
           <DialogDescription>Roll No: {student.roll} | Course: {student.course}</DialogDescription>
         </DialogHeader>
-        <div className="flex gap-4 h-full py-4 overflow-hidden">
+        <div className="flex-1 flex gap-4 py-4 overflow-hidden">
             <div className="w-1/4 flex flex-col items-center gap-4">
                 <img src={editedStudent.photo || 'https://placehold.co/150x200.png'} alt="student" className="rounded-lg object-cover w-[150px] h-[200px]" data-ai-hint="student portrait" />
                 <Input id="photo-upload" type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
@@ -277,37 +277,37 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                  <Button onClick={handleSave} className="w-full"><Save className="mr-2 h-4 w-4" /> Save Changes</Button>
                  <Button onClick={() => onPrintForm(editedStudent, editedStudent.paymentHistory || [])} variant="secondary" className="w-full"><Printer className="mr-2 h-4 w-4" /> Print Form</Button>
             </div>
-            <div className="w-3/4 flex flex-col">
-                <Tabs defaultValue={defaultTab} className="w-full flex flex-col flex-grow">
+            <div className="w-3/4 flex-1 flex flex-col overflow-hidden">
+                <Tabs defaultValue={defaultTab} className="w-full flex-1 flex flex-col">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="profile">Profile Details</TabsTrigger>
                         <TabsTrigger value="payments">Payments</TabsTrigger>
                         <TabsTrigger value="documents">Documents</TabsTrigger>
                     </TabsList>
-                    <div className="flex-grow mt-4 overflow-hidden">
-                        <ScrollArea className="h-full pr-4">
-                            <TabsContent value="profile">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><Label htmlFor="fullName">Full Name</Label><Input id="fullName" value={editedStudent.fullName} onChange={handleInputChange} /></div>
-                                    <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
-                                    <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
-                                    <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
-                                    <div><Label htmlFor="enrollmentDate">Date of Enrollment</Label><Input id="enrollmentDate" type="date" value={editedStudent.enrollmentDate} onChange={handleInputChange} /></div>
-                                    <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
-                                    <div>
-                                        <Label htmlFor="course">Course</Label>
-                                        <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)} disabled>
-                                            <SelectTrigger><SelectValue/></SelectTrigger>
-                                            <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} readOnly className="bg-muted" /></div>
-                                    <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
+                    <ScrollArea className="flex-1 mt-4 pr-4">
+                        <TabsContent value="profile" className="h-full">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><Label htmlFor="fullName">Full Name</Label><Input id="fullName" value={editedStudent.fullName} onChange={handleInputChange} /></div>
+                                <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
+                                <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
+                                <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
+                                <div><Label htmlFor="enrollmentDate">Date of Enrollment</Label><Input id="enrollmentDate" type="date" value={editedStudent.enrollmentDate} onChange={handleInputChange} /></div>
+                                <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
+                                <div>
+                                    <Label htmlFor="course">Course</Label>
+                                    <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)} disabled>
+                                        <SelectTrigger><SelectValue/></SelectTrigger>
+                                        <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                    </Select>
                                 </div>
-                            </TabsContent>
-                            <TabsContent value="payments">
+                                <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} readOnly className="bg-muted" /></div>
+                                <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="payments" className="h-full">
+                            <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-3 gap-4 mb-4 p-4 border rounded-lg">
-                                <div><Label>Amount</Label><Input type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: e.target.value}))} /></div>
+                                    <div><Label>Amount</Label><Input type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: e.target.value}))} /></div>
                                     <div>
                                         <Label>Mode</Label>
                                         <Select value={newPayment.mode} onValueChange={v => setNewPayment(p => ({...p, mode: v}))}>
@@ -318,33 +318,33 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                     <div><Label>Date</Label><Input type="date" value={newPayment.date} onChange={e => setNewPayment(p => ({...p, date: e.target.value}))} /></div>
                                     <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment & Record Income</Button></div>
                                 </div>
-                                <div className="rounded-md border">
-                                <Table>
-                                    <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-                                    <TableBody>
-                                        {editedStudent.paymentHistory?.length ? (
-                                            editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
-                                                <TableRow key={i}>
-                                                    <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
-                                                    <TableCell>₹{p.amount.toLocaleString()}</TableCell>
-                                                    <TableCell>{p.mode}</TableCell>
-                                                    <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
+                                <div className="flex-1 rounded-md border overflow-y-auto">
+                                    <Table>
+                                        <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {editedStudent.paymentHistory?.length ? (
+                                                editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
+                                                    <TableRow key={i}>
+                                                        <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
+                                                        <TableCell>₹{p.amount.toLocaleString()}</TableCell>
+                                                        <TableCell>{p.mode}</TableCell>
+                                                        <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="h-24 text-center">No payment history.</TableCell>
                                                 </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={4} className="h-24 text-center">No payment history.</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
+                                            )}
+                                        </TableBody>
+                                    </Table>
                                 </div>
-                            </TabsContent>
-                            <TabsContent value="documents">
-                                <p className="text-muted-foreground">Document upload and management coming soon.</p>
-                            </TabsContent>
-                        </ScrollArea>
-                    </div>
+                            </div>
+                        </TabsContent>
+                        <TabsContent value="documents" className="h-full">
+                            <p className="text-muted-foreground">Document upload and management coming soon.</p>
+                        </TabsContent>
+                    </ScrollArea>
                 </Tabs>
             </div>
         </div>
@@ -352,3 +352,5 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     </Dialog>
   );
 }
+
+    
