@@ -129,27 +129,90 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
         <head>
           <title>Fee Slip</title>
           <style>
-            body { font-family: sans-serif; margin: 20px; }
-            .container { border: 1px solid #ccc; padding: 20px; width: 300px; }
-            h2 { text-align: center; margin-top: 0; }
-            p { margin: 5px 0; }
-            .label { font-weight: bold; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+            body { 
+              font-family: 'Inter', sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f8f9fa;
+              -webkit-print-color-adjust: exact;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100%;
+            }
+            .container {
+              border: 1px solid #dee2e6;
+              padding: 24px;
+              width: 380px;
+              background: #fff;
+              box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            }
+            h2 {
+              text-align: center;
+              margin-top: 0;
+              font-size: 24px;
+              font-weight: 700;
+              color: #23395d;
+              margin-bottom: 24px;
+            }
+            .detail-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                font-size: 14px;
+            }
+            .label {
+              font-weight: 500;
+              color: #495057;
+            }
+            .value {
+              font-weight: 400;
+              color: #212529;
+            }
+            hr {
+                border: 0;
+                border-top: 1px solid #e9ecef;
+                margin: 16px 0;
+            }
+            .total-row {
+                font-weight: 700;
+            }
+            .total-row .value {
+                font-weight: 700;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 24px;
+                font-size: 12px;
+                color: #6c757d;
+            }
+             @media print {
+              body {
+                background-color: #fff;
+              }
+              .container {
+                box-shadow: none;
+                border: none;
+              }
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <h2>Lex Legum Academy</h2>
-            <p><span class="label">Student:</span> ${editedStudent.fullName}</p>
-            <p><span class="label">Roll No:</span> ${editedStudent.roll}</p>
-            <p><span class="label">Course:</span> ${editedStudent.course}</p>
+            <div class="detail-item"><span class="label">Student:</span> <span class="value">${editedStudent.fullName}</span></div>
+            <div class="detail-item"><span class="label">Roll No:</span> <span class="value">${editedStudent.roll}</span></div>
+            <div class="detail-item"><span class="label">Course:</span> <span class="value">${editedStudent.course}</span></div>
             <hr/>
-            <p><span class="label">Date:</span> ${format(new Date(payment.date), "PPP")}</p>
-            <p><span class="label">Amount Paid:</span> ₹${payment.amount.toLocaleString()}</p>
-            <p><span class="label">Mode:</span> ${payment.mode}</p>
+            <div class="detail-item"><span class="label">Date:</span> <span class="value">${format(new Date(payment.date), "PPP")}</span></div>
+            <div class="detail-item"><span class="label">Amount Paid:</span> <span class="value">₹${payment.amount.toLocaleString()}</span></div>
+            <div class="detail-item"><span class="label">Mode:</span> <span class="value">${payment.mode}</span></div>
             <hr/>
-             <p><span class="label">Total Fee:</span> ₹${editedStudent.totalFee.toLocaleString()}</p>
-            <p><span class="label">Total Paid:</span> ₹${editedStudent.amountPaid.toLocaleString()}</p>
-            <p><span class="label">Due Amount:</span> ₹${dueAmount.toLocaleString()}</p>
+            <div class="detail-item total-row"><span class="label">Total Fee:</span> <span class="value">₹${editedStudent.totalFee.toLocaleString()}</span></div>
+            <div class="detail-item"><span class="label">Total Paid:</span> <span class="value">₹${editedStudent.amountPaid.toLocaleString()}</span></div>
+            <div class="detail-item total-row"><span class="label">Due Amount:</span> <span class="value">₹${dueAmount.toLocaleString()}</span></div>
+            <div class="footer">This is a computer-generated receipt.</div>
           </div>
         </body>
       </html>
