@@ -133,7 +133,7 @@ export default function SalesPage() {
             description: `Sale of ${saleData.quantity} x ${saleData.materialName} to ${saleData.customerName}`,
             amount: saleData.totalPrice,
             type: "Income",
-            category: "Miscellaneous",
+            category: "Sales",
             date: saleDate,
             saleId: saleDocRef.id
         });

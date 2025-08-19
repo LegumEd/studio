@@ -32,7 +32,7 @@ type Transaction = z.infer<typeof transactionSchema> & {
   id: string;
 };
 
-const incomeCategories = ["Fee Collection", "Miscellaneous"];
+const incomeCategories = ["Fee Collection", "Sales", "Miscellaneous"];
 const expenseCategories = ["Rent", "Utilities", "Salaries", "Marketing", "Supplies", "Miscellaneous"];
 
 export default function ExpensesPage() {

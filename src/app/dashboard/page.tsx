@@ -5,11 +5,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, Target, Scale, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Users, BookOpen, Target, Scale, ArrowUpRight, ArrowDownLeft, BookCopy, UserPlus } from 'lucide-react';
 
 type Transaction = {
   type: "Income" | "Expense";
   amount: number;
+  category: string;
 };
 
 type Enquiry = {
@@ -49,13 +50,17 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const { totalIncome, totalExpenses, netBalance } = useMemo(() => {
+  const { totalIncome, totalExpenses, netBalance, salesIncome, enrollmentIncome } = useMemo(() => {
     const income = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
     const expenses = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
+    const sales = transactions.filter(t => t.category === 'Sales').reduce((sum, t) => sum + t.amount, 0);
+    const enrollments = transactions.filter(t => t.category === 'Fee Collection').reduce((sum, t) => sum + t.amount, 0);
     return {
       totalIncome: income,
       totalExpenses: expenses,
       netBalance: income - expenses,
+      salesIncome: sales,
+      enrollmentIncome: enrollments,
     };
   }, [transactions]);
 
@@ -103,7 +108,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-2">
+       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -120,6 +125,24 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">₹{totalExpenses.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Enrollment Income</CardTitle>
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">₹{enrollmentIncome.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+           <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sales Revenue</CardTitle>
+              <BookCopy className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">₹{salesIncome.toLocaleString()}</div>
             </CardContent>
           </Card>
        </div>
