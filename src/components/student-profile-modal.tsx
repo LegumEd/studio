@@ -46,6 +46,23 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
     return await Promise.all(filePromises);
 };
 
+const toWords = (num: number): string => {
+    const a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+    const b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
+    
+    if ((num = num.toString()).length > 9) return 'overflow';
+    const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return '';
+    let str = '';
+    str += (parseInt(n[1]) != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+    str += (parseInt(n[2]) != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+    str += (parseInt(n[3]) != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+    str += (parseInt(n[4]) != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+    str += (parseInt(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+    
+    return str.trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + ' Only';
+}
+
 
 export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses, onPrintForm, defaultTab = "profile" }: StudentProfileModalProps) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
@@ -122,89 +139,77 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     setNewPayment({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   };
   
-  const handlePrintFeeSlip = (payment: Payment) => {
-    const dueAmount = editedStudent.totalFee - editedStudent.amountPaid;
+ const handlePrintFeeSlip = (payment: Payment) => {
+    const slipId = new Date(payment.timestamp).getTime().toString().slice(-6);
+    const paymentDate = new Date(payment.date);
+    const paymentTime = new Date(payment.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    
     const slipHtml = `
       <html>
         <head>
-          <title>Fee Slip</title>
+          <title>Fee Demand Slip - ${editedStudent.roll}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
             body { 
-              font-family: 'Inter', sans-serif;
-              margin: 0;
-              padding: 0;
-              background-color: #f8f9fa;
-              -webkit-print-color-adjust: exact;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
+              font-family: 'Courier Prime', monospace;
+              margin: 20px;
+              font-size: 14px;
             }
             .container {
-              border: 1px solid #dee2e6;
+              border: 1px solid #000;
               padding: 32px;
-              width: 420px;
-              background: #fff;
-              box-shadow: 0 0 15px rgba(0,0,0,0.07);
-              border-radius: 8px;
+              width: 700px;
+              margin: auto;
             }
             .header {
               text-align: center;
-              margin-bottom: 32px;
+              margin-bottom: 24px;
             }
             h2 {
-              font-size: 28px;
+              font-size: 18px;
               font-weight: 700;
-              color: #23395d;
               margin: 0;
             }
-            .detail-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 12px 0;
-                font-size: 14px;
-                border-bottom: 1px solid #e9ecef;
+             h3 {
+              font-size: 16px;
+              font-weight: 700;
+              margin: 0;
             }
-             .detail-item:last-child {
-                border-bottom: none;
+            .details-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 16px;
             }
-            .label {
-              font-weight: 500;
-              color: #495057;
+            .details-table td {
+                padding: 4px 0;
             }
-            .value {
-              font-weight: 500;
-              color: #212529;
-              text-align: right;
+            .separator {
+                border-bottom: 1px dashed #000;
+                margin: 16px 0;
+                height: 1px;
             }
-            .section-title {
-                padding: 16px 0 8px;
-                font-weight: 700;
-                color: #23395d;
-                font-size: 16px;
-                border-bottom: 2px solid #23395d;
-                margin-bottom: 8px;
+            .fee-table {
+                width: 100%;
+                margin: 16px 0;
             }
-            .totals {
-                margin-top: 16px;
+            .fee-table td {
+                padding: 4px 0;
             }
-            .totals .detail-item .label, .totals .detail-item .value {
-                font-weight: 700;
+            .text-right {
+                text-align: right;
             }
-             .totals .detail-item:last-child .value {
-                font-size: 16px;
-                color: #dc3545;
-            }
-            .footer {
+            .text-center {
                 text-align: center;
-                margin-top: 32px;
-                font-size: 12px;
-                color: #6c757d;
             }
-             @media print {
+            .font-bold {
+                font-weight: 700;
+            }
+            .footer-section {
+                margin-top: 24px;
+            }
+            @media print {
               body {
-                background-color: #fff;
+                margin: 0;
               }
               .container {
                 box-shadow: none;
@@ -219,26 +224,72 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
         <body>
           <div class="container">
             <div class="header">
-              <h2>Lex Legum Academy</h2>
+              <h2>LEX LEGUM ACADEMY</h2>
+              <h3>FEE DEMAND SLIP</h3>
             </div>
             
-            <div class="section-title">Student Details</div>
-            <div class="detail-item"><span class="label">Student:</span> <span class="value">${editedStudent.fullName}</span></div>
-            <div class="detail-item"><span class="label">Roll No:</span> <span class="value">${editedStudent.roll}</span></div>
-            <div class="detail-item"><span class="label">Course:</span> <span class="value">${editedStudent.course}</span></div>
-            
-            <div class="section-title">Payment Receipt</div>
-            <div class="detail-item"><span class="label">Receipt Date:</span> <span class="value">${format(new Date(payment.date), "PPP")}</span></div>
-            <div class="detail-item"><span class="label">Amount Paid:</span> <span class="value">₹${payment.amount.toLocaleString()}</span></div>
-            <div class="detail-item"><span class="label">Payment Mode:</span> <span class="value">${payment.mode}</span></div>
+            <table class="details-table">
+                <tr>
+                    <td>Register No</td>
+                    <td>: ${editedStudent.roll}</td>
+                    <td class="text-right">Date</td>
+                    <td class="text-right">: ${format(paymentDate, "dd/MM/yyyy")}</td>
+                </tr>
+                 <tr>
+                    <td>Class Name</td>
+                    <td>: ${editedStudent.course}</td>
+                    <td class="text-right">Time</td>
+                    <td class="text-right">: ${paymentTime}</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>: ${editedStudent.fullName}</td>
+                     <td class="text-right">Slip No</td>
+                    <td class="text-right">: ${slipId}</td>
+                </tr>
+                 <tr>
+                    <td>Academic Year</td>
+                    <td>: ${editedStudent.enrollmentYear}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
 
-            <div class="totals">
-              <div class="detail-item"><span class="label">Total Course Fee:</span> <span class="value">₹${editedStudent.totalFee.toLocaleString()}</span></div>
-              <div class="detail-item"><span class="label">Total Paid to Date:</span> <span class="value">₹${editedStudent.amountPaid.toLocaleString()}</span></div>
-              <div class="detail-item"><span class="label">Remaining Due:</span> <span class="value">₹${dueAmount.toLocaleString()}</span></div>
+            <div class="separator"></div>
+
+            <table class="fee-table">
+                <tr>
+                    <td>Fee Payment</td>
+                    <td class="text-right">${payment.amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                </tr>
+                 <tr>
+                    <td>(${payment.mode})</td>
+                    <td></td>
+                </tr>
+            </table>
+            
+            <div class="separator"></div>
+            
+            <table class="fee-table">
+                <tr>
+                    <td class="font-bold">Net Amount : (INR)</td>
+                    <td class="text-right font-bold">${payment.amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                </tr>
+                 <tr>
+                    <td colspan="2">${toWords(payment.amount)}</td>
+                </tr>
+            </table>
+
+            <div class="separator"></div>
+            
+            <div class="footer-section">
+                <div>Instructions:</div>
+                <div>- Fee once paid is non-refundable.</div>
+                <br />
+                <br />
+                <div>Prepared By: Admin</div>
             </div>
 
-            <div class="footer">This is a computer-generated receipt.</div>
           </div>
         </body>
       </html>
@@ -284,27 +335,29 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                         <TabsTrigger value="payments">Payments</TabsTrigger>
                         <TabsTrigger value="documents">Documents</TabsTrigger>
                     </TabsList>
-                    <ScrollArea className="flex-1 mt-4 pr-4">
-                        <TabsContent value="profile" className="h-full">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><Label htmlFor="fullName">Full Name</Label><Input id="fullName" value={editedStudent.fullName} onChange={handleInputChange} /></div>
-                                <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
-                                <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
-                                <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
-                                <div><Label htmlFor="enrollmentDate">Date of Enrollment</Label><Input id="enrollmentDate" type="date" value={editedStudent.enrollmentDate} onChange={handleInputChange} /></div>
-                                <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
-                                <div>
-                                    <Label htmlFor="course">Course</Label>
-                                    <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)} disabled>
-                                        <SelectTrigger><SelectValue/></SelectTrigger>
-                                        <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                    </Select>
+                   
+                        <TabsContent value="profile" className="h-full flex-1 overflow-y-auto">
+                             <ScrollArea className="h-full pr-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div><Label htmlFor="fullName">Full Name</Label><Input id="fullName" value={editedStudent.fullName} onChange={handleInputChange} /></div>
+                                    <div><Label htmlFor="fathersName">Father's Name</Label><Input id="fathersName" value={editedStudent.fathersName} onChange={handleInputChange} /></div>
+                                    <div><Label htmlFor="mobile">Mobile</Label><Input id="mobile" value={editedStudent.mobile} onChange={handleInputChange} /></div>
+                                    <div><Label htmlFor="dob">Date of Birth</Label><Input id="dob" type="date" value={editedStudent.dob} onChange={handleInputChange} /></div>
+                                    <div><Label htmlFor="enrollmentDate">Date of Enrollment</Label><Input id="enrollmentDate" type="date" value={editedStudent.enrollmentDate} onChange={handleInputChange} /></div>
+                                    <div><Label htmlFor="roll">Roll No.</Label><Input id="roll" value={editedStudent.roll} onChange={handleInputChange} readOnly className="bg-muted" /></div>
+                                    <div>
+                                        <Label htmlFor="course">Course</Label>
+                                        <Select value={editedStudent.course} onValueChange={(v) => handleSelectChange('course', v)} disabled>
+                                            <SelectTrigger><SelectValue/></SelectTrigger>
+                                            <SelectContent>{courses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} readOnly className="bg-muted" /></div>
+                                    <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
                                 </div>
-                                <div><Label htmlFor="totalFee">Total Fee</Label><Input id="totalFee" type="number" value={editedStudent.totalFee} onChange={e => setEditedStudent(prev => ({...prev, totalFee: parseFloat(e.target.value) || 0 }))} readOnly className="bg-muted" /></div>
-                                <div className="col-span-2"><Label htmlFor="address">Address</Label><Textarea id="address" value={editedStudent.address} onChange={handleInputChange} /></div>
-                            </div>
+                            </ScrollArea>
                         </TabsContent>
-                        <TabsContent value="payments" className="h-full">
+                        <TabsContent value="payments" className="h-full flex-1 flex flex-col overflow-hidden">
                             <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-3 gap-4 mb-4 p-4 border rounded-lg">
                                     <div><Label>Amount</Label><Input type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: e.target.value}))} /></div>
@@ -318,33 +371,37 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                     <div><Label>Date</Label><Input type="date" value={newPayment.date} onChange={e => setNewPayment(p => ({...p, date: e.target.value}))} /></div>
                                     <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment & Record Income</Button></div>
                                 </div>
-                                <div className="flex-1 rounded-md border overflow-y-auto">
-                                    <Table>
-                                        <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
-                                        <TableBody>
-                                            {editedStudent.paymentHistory?.length ? (
-                                                editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
-                                                    <TableRow key={i}>
-                                                        <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
-                                                        <TableCell>₹{p.amount.toLocaleString()}</TableCell>
-                                                        <TableCell>{p.mode}</TableCell>
-                                                        <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
+                                <div className="flex-1 rounded-md border overflow-hidden">
+                                    <ScrollArea className="h-full">
+                                        <Table>
+                                            <TableHeader className="sticky top-0 bg-background"><TableRow><TableHead>Date</TableHead><TableHead>Amount</TableHead><TableHead>Mode</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {editedStudent.paymentHistory?.length ? (
+                                                    editedStudent.paymentHistory?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((p, i) => (
+                                                        <TableRow key={i}>
+                                                            <TableCell>{format(new Date(p.date), "PPP")}</TableCell>
+                                                            <TableCell>₹{p.amount.toLocaleString()}</TableCell>
+                                                            <TableCell>{p.mode}</TableCell>
+                                                            <TableCell className="text-right"><Button variant="ghost" size="icon" onClick={() => handlePrintFeeSlip(p)}><Printer className="h-4 w-4" /></Button></TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={4} className="h-24 text-center">No payment history.</TableCell>
                                                     </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={4} className="h-24 text-center">No payment history.</TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </ScrollArea>
                                 </div>
                             </div>
                         </TabsContent>
-                        <TabsContent value="documents" className="h-full">
-                            <p className="text-muted-foreground">Document upload and management coming soon.</p>
+                        <TabsContent value="documents" className="h-full flex-1 overflow-y-auto">
+                             <ScrollArea className="h-full">
+                                <p className="text-muted-foreground">Document upload and management coming soon.</p>
+                            </ScrollArea>
                         </TabsContent>
-                    </ScrollArea>
+                   
                 </Tabs>
             </div>
         </div>
@@ -352,5 +409,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     </Dialog>
   );
 }
+
+    
 
     
