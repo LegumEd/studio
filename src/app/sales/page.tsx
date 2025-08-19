@@ -83,7 +83,7 @@ export default function SalesPage() {
   }, []);
   
   const totalRevenue = useMemo(() => {
-      return sales.reduce((total, sale) => total + sale.totalPrice, 0);
+      return sales.reduce((total, sale) => total + (sale.totalPrice || 0), 0);
   }, [sales])
 
   const openForm = (sale: Sale | null = null) => {
@@ -208,8 +208,8 @@ export default function SalesPage() {
                   <td>${s.customerName}</td>
                   <td>${s.materialName}</td>
                   <td>${s.quantity}</td>
-                  <td>₹${s.unitPrice.toLocaleString()}</td>
-                  <td>₹${s.totalPrice.toLocaleString()}</td>
+                  <td>₹${(s.unitPrice || 0).toLocaleString()}</td>
+                  <td>₹${(s.totalPrice || 0).toLocaleString()}</td>
                   <td>${s.medium}</td>
                   <td>${s.collegeUniversity || 'N/A'}</td>
                 </tr>
@@ -285,7 +285,7 @@ export default function SalesPage() {
                     <TableCell className="font-medium">{sale.customerName}</TableCell>
                     <TableCell>{sale.materialName}</TableCell>
                     <TableCell>{sale.quantity}</TableCell>
-                    <TableCell className="text-right">₹{sale.totalPrice.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">₹{(sale.totalPrice || 0).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -397,5 +397,3 @@ export default function SalesPage() {
     </main>
   );
 }
-
-    
