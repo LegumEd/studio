@@ -24,6 +24,7 @@ import type { Sale, StudyMaterial } from "@/lib/types";
 const saleSchema = z.object({
   customerName: z.string().min(2, "Customer name is required"),
   materialId: z.string().min(1, "Please select a material"),
+  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
   medium: z.enum(["English", "Hindi"]),
   collegeUniversity: z.string().optional(),
 });
@@ -48,11 +49,13 @@ export default function SalesPage() {
     formState: { errors },
   } = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
-    defaultValues: { medium: "English" }
+    defaultValues: { medium: "English", quantity: 1 }
   });
   
   const selectedMaterialId = watch("materialId");
+  const quantity = watch("quantity");
   const selectedMaterial = useMemo(() => materials.find(m => m.id === selectedMaterialId), [materials, selectedMaterialId]);
+  const totalPrice = useMemo(() => (selectedMaterial?.price || 0) * (quantity || 1), [selectedMaterial, quantity]);
 
 
   useEffect(() => {
@@ -80,7 +83,7 @@ export default function SalesPage() {
   }, []);
   
   const totalRevenue = useMemo(() => {
-      return sales.reduce((total, sale) => total + sale.price, 0);
+      return sales.reduce((total, sale) => total + sale.totalPrice, 0);
   }, [sales])
 
   const openForm = (sale: Sale | null = null) => {
@@ -88,10 +91,11 @@ export default function SalesPage() {
     if (sale) {
       setValue("customerName", sale.customerName);
       setValue("materialId", sale.materialId);
+      setValue("quantity", sale.quantity);
       setValue("medium", sale.medium);
       setValue("collegeUniversity", sale.collegeUniversity);
     } else {
-      reset({ customerName: "", materialId: "", medium: "English", collegeUniversity: "" });
+      reset({ customerName: "", materialId: "", quantity: 1, medium: "English", collegeUniversity: "" });
     }
     setIsFormOpen(true);
   };
@@ -107,7 +111,8 @@ export default function SalesPage() {
       const saleData = {
           ...data,
           materialName: selectedMaterial.name,
-          price: selectedMaterial.price,
+          unitPrice: selectedMaterial.price,
+          totalPrice: totalPrice,
       };
 
       if (editingSale) {
@@ -125,8 +130,8 @@ export default function SalesPage() {
 
         // Add corresponding income transaction
         await addDoc(collection(db, "transactions"), {
-            description: `Sale of ${saleData.materialName} to ${saleData.customerName}`,
-            amount: saleData.price,
+            description: `Sale of ${saleData.quantity} x ${saleData.materialName} to ${saleData.customerName}`,
+            amount: saleData.totalPrice,
             type: "Income",
             category: "Miscellaneous",
             date: saleDate,
@@ -189,9 +194,11 @@ export default function SalesPage() {
                 <th>Date</th>
                 <th>Customer Name</th>
                 <th>Material</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
                 <th>Medium</th>
                 <th>College/University</th>
-                <th>Price</th>
               </tr>
             </thead>
             <tbody>
@@ -200,13 +207,15 @@ export default function SalesPage() {
                   <td>${format(new Date(s.saleDate), "dd/MM/yyyy")}</td>
                   <td>${s.customerName}</td>
                   <td>${s.materialName}</td>
+                  <td>${s.quantity}</td>
+                  <td>₹${s.unitPrice.toLocaleString()}</td>
+                  <td>₹${s.totalPrice.toLocaleString()}</td>
                   <td>${s.medium}</td>
                   <td>${s.collegeUniversity || 'N/A'}</td>
-                  <td>₹${s.price.toLocaleString()}</td>
                 </tr>
               `).join('')}
                <tr>
-                  <td colspan="5" class="total">Total Revenue</td>
+                  <td colspan="7" class="total">Total Revenue</td>
                   <td class="total">₹${totalRevenue.toLocaleString()}</td>
                 </tr>
             </tbody>
@@ -263,9 +272,8 @@ export default function SalesPage() {
                 <TableHead>Date</TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Material</TableHead>
-                <TableHead>Medium</TableHead>
-                <TableHead>College/University</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+                <TableHead>Qty</TableHead>
+                <TableHead className="text-right">Total Price</TableHead>
                 <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
@@ -276,9 +284,8 @@ export default function SalesPage() {
                     <TableCell>{format(new Date(sale.saleDate), "PPP")}</TableCell>
                     <TableCell className="font-medium">{sale.customerName}</TableCell>
                     <TableCell>{sale.materialName}</TableCell>
-                    <TableCell>{sale.medium}</TableCell>
-                    <TableCell>{sale.collegeUniversity || 'N/A'}</TableCell>
-                    <TableCell className="text-right">₹{sale.price.toLocaleString()}</TableCell>
+                    <TableCell>{sale.quantity}</TableCell>
+                    <TableCell className="text-right">₹{sale.totalPrice.toLocaleString()}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -298,7 +305,7 @@ export default function SalesPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center h-24">No sales found.</TableCell>
+                  <TableCell colSpan={6} className="text-center h-24">No sales found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -318,25 +325,32 @@ export default function SalesPage() {
                 <Controller name="customerName" control={control} render={({field}) => <Input id="customerName" {...field} />} />
                 {errors.customerName && <p className="text-destructive text-sm mt-1">{errors.customerName.message}</p>}
               </div>
-               <div>
-                <Label htmlFor="materialId">Material</Label>
-                <Controller
-                  name="materialId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger><SelectValue placeholder="Select a material" /></SelectTrigger>
-                      <SelectContent>
-                        {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name} (₹{m.price})</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.materialId && <p className="text-destructive text-sm mt-1">{errors.materialId.message}</p>}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="materialId">Material</Label>
+                  <Controller
+                    name="materialId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger><SelectValue placeholder="Select a material" /></SelectTrigger>
+                        <SelectContent>
+                          {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name} (₹{m.price})</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.materialId && <p className="text-destructive text-sm mt-1">{errors.materialId.message}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Controller name="quantity" control={control} render={({field}) => <Input id="quantity" type="number" {...field} />} />
+                   {errors.quantity && <p className="text-destructive text-sm mt-1">{errors.quantity.message}</p>}
+                </div>
               </div>
               <div>
-                <Label>Price</Label>
-                <Input value={selectedMaterial ? `₹${selectedMaterial.price.toLocaleString()}`: 'Select a material first'} readOnly className="bg-muted" />
+                <Label>Total Price</Label>
+                <Input value={`₹${totalPrice.toLocaleString()}`} readOnly className="bg-muted font-bold" />
               </div>
               <div>
                 <Label htmlFor="medium">Medium</Label>
@@ -383,3 +397,5 @@ export default function SalesPage() {
     </main>
   );
 }
+
+    

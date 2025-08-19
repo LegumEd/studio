@@ -52,7 +52,9 @@ export interface Sale {
     customerName: string;
     materialId: string;
     materialName: string;
-    price: number;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
     medium: 'English' | 'Hindi';
     collegeUniversity?: string;
     saleDate: string;
@@ -62,3 +64,5 @@ export interface Sale {
 // This is managed in Firestore and fetched dynamically.
 // Kept here only for reference for paymentModes.
 export const paymentModes = ["Cash", "UPI", "Bank Transfer"];
+
+    
