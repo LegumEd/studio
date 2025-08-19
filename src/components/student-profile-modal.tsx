@@ -16,6 +16,8 @@ import type { Student, DocumentFile, Payment } from "@/lib/types";
 import { paymentModes } from "@/lib/types";
 import { format } from "date-fns";
 import { Download, Printer, Save, Trash2, Upload } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { addDoc, collection } from 'firebase/firestore';
 
 
 interface StudentProfileModalProps {
@@ -72,11 +74,12 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
 
   const handleSave = () => {
     onUpdateStudent(editedStudent);
-    toast({ title: "Success", description: "Student details updated." });
+    // Don't toast here, as the payment function will toast. This avoids double toasts.
+    // toast({ title: "Success", description: "Student details updated." });
     setIsOpen(false);
   };
   
-  const handleAddPayment = () => {
+  const handleAddPayment = async () => {
     const amount = parseFloat(newPayment.amount);
     if (!amount || isNaN(amount) || amount <= 0) {
         toast({ title: "Error", description: "Please enter a valid amount.", variant: "destructive" });
@@ -99,7 +102,22 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     setEditedStudent(updatedStudent); // Update local state immediately
     onUpdateStudent(updatedStudent); // Propagate change to parent
 
-    toast({ title: "Success", description: "Payment added successfully." });
+    try {
+        await addDoc(collection(db, "transactions"), {
+            description: `Fee from ${updatedStudent.fullName} (Roll: ${updatedStudent.roll})`,
+            amount: amount,
+            type: "Income",
+            category: "Fee Collection",
+            date: newPayment.date,
+            studentId: updatedStudent.id,
+            paymentTimestamp: payment.timestamp,
+        });
+        toast({ title: "Success", description: "Payment added and income recorded." });
+    } catch (error) {
+        console.error("Error creating transaction:", error);
+        toast({ title: "Warning", description: "Payment was saved to student, but failed to record as income.", variant: "destructive" });
+    }
+
     setNewPayment({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   };
   
@@ -207,7 +225,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                 </Select>
                             </div>
                             <div><Label>Date</Label><Input type="date" value={newPayment.date} onChange={e => setNewPayment(p => ({...p, date: e.target.value}))} /></div>
-                            <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment</Button></div>
+                            <div className="col-span-3"><Button onClick={handleAddPayment} className="w-full">Add Payment & Record Income</Button></div>
                         </div>
                         <div className="rounded-md border">
                         <Table>

@@ -25,6 +25,7 @@ import type { Student, Course } from "@/lib/types";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 export default function EnrollmentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -68,10 +69,24 @@ export default function EnrollmentsPage() {
 
   const addStudent = async (newStudent: Omit<Student, 'id' | 'lastUpdated'>) => {
     try {
-      await addDoc(collection(db, "students"), {
+      // Add student document
+      const studentDocRef = await addDoc(collection(db, "students"), {
         ...newStudent,
         lastUpdated: serverTimestamp()
       });
+
+      // Add corresponding income transaction if fee was paid
+      if (newStudent.amountPaid > 0) {
+        await addDoc(collection(db, "transactions"), {
+          description: `Fee from new enrollment: ${newStudent.fullName} (Roll: ${newStudent.roll})`,
+          amount: newStudent.amountPaid,
+          type: "Income",
+          category: "Fee Collection",
+          date: newStudent.paymentDate || format(new Date(), "yyyy-MM-dd"),
+          studentId: studentDocRef.id
+        });
+      }
+
       toast({ title: "Success", description: "Student added successfully." });
     } catch (error) {
       console.error("Error adding student:", error);

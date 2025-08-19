@@ -103,6 +103,7 @@ export default function SalesPage() {
     }
 
     try {
+      const saleDate = format(new Date(), "yyyy-MM-dd");
       const saleData = {
           ...data,
           materialName: selectedMaterial.name,
@@ -110,14 +111,28 @@ export default function SalesPage() {
       };
 
       if (editingSale) {
+        // Note: Editing a sale does not create a new transaction to avoid duplicates.
+        // To adjust income, the original transaction should be modified manually.
         const saleRef = doc(db, "sales", editingSale.id);
         await updateDoc(saleRef, saleData);
         toast({ title: "Success", description: "Sale record updated successfully." });
       } else {
-        await addDoc(collection(db, "sales"), {
+        // Add sale document
+        const saleDocRef = await addDoc(collection(db, "sales"), {
           ...saleData,
-          saleDate: format(new Date(), "yyyy-MM-dd"),
+          saleDate: saleDate,
         });
+
+        // Add corresponding income transaction
+        await addDoc(collection(db, "transactions"), {
+            description: `Sale of ${saleData.materialName} to ${saleData.customerName}`,
+            amount: saleData.price,
+            type: "Income",
+            category: "Miscellaneous",
+            date: saleDate,
+            saleId: saleDocRef.id
+        });
+        
         toast({ title: "Success", description: "Sale recorded successfully." });
       }
       setIsFormOpen(false);
@@ -136,6 +151,8 @@ export default function SalesPage() {
   const confirmDelete = async () => {
     if (saleToDelete) {
         try {
+            // Note: Deleting a sale does not automatically delete the corresponding transaction.
+            // This needs to be handled manually from the Expenses & Income page if required.
             await deleteDoc(doc(db, "sales", saleToDelete));
             toast({ title: "Success", description: "Sale record deleted successfully." });
         } catch (error) {
