@@ -227,7 +227,7 @@ const handlePrintForm = (student: Student, paymentHistory: Payment[]) => {
                     </tr>
                   </thead>
                   <tbody>
-                    ${paymentHistory.map(p => `
+                    ${paymentHistory.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(p => `
                       <tr>
                         <td>${format(new Date(p.date), 'PPP')}</td>
                         <td>₹${p.amount.toLocaleString()}</td>
@@ -335,7 +335,7 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
                 const due = student.totalFee - student.amountPaid;
                 const status = due <= 0 ? "Paid" : "Pending";
                 return (
-                  <TableRow key={student.id}>
+                  <TableRow key={student.id} className="hover:bg-muted/50">
                     <TableCell className="hidden sm:table-cell">
                       <img
                         alt="Student photo"

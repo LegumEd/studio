@@ -139,51 +139,66 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
               display: flex;
               justify-content: center;
               align-items: center;
-              height: 100%;
+              min-height: 100vh;
             }
             .container {
               border: 1px solid #dee2e6;
-              padding: 24px;
-              width: 380px;
+              padding: 32px;
+              width: 420px;
               background: #fff;
-              box-shadow: 0 0 10px rgba(0,0,0,0.05);
+              box-shadow: 0 0 15px rgba(0,0,0,0.07);
+              border-radius: 8px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 32px;
             }
             h2 {
-              text-align: center;
-              margin-top: 0;
-              font-size: 24px;
+              font-size: 28px;
               font-weight: 700;
               color: #23395d;
-              margin-bottom: 24px;
+              margin: 0;
             }
             .detail-item {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 12px;
+                padding: 12px 0;
                 font-size: 14px;
+                border-bottom: 1px solid #e9ecef;
+            }
+             .detail-item:last-child {
+                border-bottom: none;
             }
             .label {
               font-weight: 500;
               color: #495057;
             }
             .value {
-              font-weight: 400;
+              font-weight: 500;
               color: #212529;
+              text-align: right;
             }
-            hr {
-                border: 0;
-                border-top: 1px solid #e9ecef;
-                margin: 16px 0;
+            .section-title {
+                padding: 16px 0 8px;
+                font-weight: 700;
+                color: #23395d;
+                font-size: 16px;
+                border-bottom: 2px solid #23395d;
+                margin-bottom: 8px;
             }
-            .total-row {
+            .totals {
+                margin-top: 16px;
+            }
+            .totals .detail-item .label, .totals .detail-item .value {
                 font-weight: 700;
             }
-            .total-row .value {
-                font-weight: 700;
+             .totals .detail-item:last-child .value {
+                font-size: 16px;
+                color: #dc3545;
             }
             .footer {
                 text-align: center;
-                margin-top: 24px;
+                margin-top: 32px;
                 font-size: 12px;
                 color: #6c757d;
             }
@@ -194,24 +209,35 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
               .container {
                 box-shadow: none;
                 border: none;
+                width: 100%;
+                height: 100%;
+                padding: 0;
               }
             }
           </style>
         </head>
         <body>
           <div class="container">
-            <h2>Lex Legum Academy</h2>
+            <div class="header">
+              <h2>Lex Legum Academy</h2>
+            </div>
+            
+            <div class="section-title">Student Details</div>
             <div class="detail-item"><span class="label">Student:</span> <span class="value">${editedStudent.fullName}</span></div>
             <div class="detail-item"><span class="label">Roll No:</span> <span class="value">${editedStudent.roll}</span></div>
             <div class="detail-item"><span class="label">Course:</span> <span class="value">${editedStudent.course}</span></div>
-            <hr/>
-            <div class="detail-item"><span class="label">Date:</span> <span class="value">${format(new Date(payment.date), "PPP")}</span></div>
+            
+            <div class="section-title">Payment Receipt</div>
+            <div class="detail-item"><span class="label">Receipt Date:</span> <span class="value">${format(new Date(payment.date), "PPP")}</span></div>
             <div class="detail-item"><span class="label">Amount Paid:</span> <span class="value">₹${payment.amount.toLocaleString()}</span></div>
-            <div class="detail-item"><span class="label">Mode:</span> <span class="value">${payment.mode}</span></div>
-            <hr/>
-            <div class="detail-item total-row"><span class="label">Total Fee:</span> <span class="value">₹${editedStudent.totalFee.toLocaleString()}</span></div>
-            <div class="detail-item"><span class="label">Total Paid:</span> <span class="value">₹${editedStudent.amountPaid.toLocaleString()}</span></div>
-            <div class="detail-item total-row"><span class="label">Due Amount:</span> <span class="value">₹${dueAmount.toLocaleString()}</span></div>
+            <div class="detail-item"><span class="label">Payment Mode:</span> <span class="value">${payment.mode}</span></div>
+
+            <div class="totals">
+              <div class="detail-item"><span class="label">Total Course Fee:</span> <span class="value">₹${editedStudent.totalFee.toLocaleString()}</span></div>
+              <div class="detail-item"><span class="label">Total Paid to Date:</span> <span class="value">₹${editedStudent.amountPaid.toLocaleString()}</span></div>
+              <div class="detail-item"><span class="label">Remaining Due:</span> <span class="value">₹${dueAmount.toLocaleString()}</span></div>
+            </div>
+
             <div class="footer">This is a computer-generated receipt.</div>
           </div>
         </body>
@@ -326,4 +352,3 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     </Dialog>
   );
 }
-
