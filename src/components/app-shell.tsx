@@ -4,7 +4,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookUser, HandCoins, Settings, Target, Scale, LayoutDashboard } from 'lucide-react';
+import { BookUser, HandCoins, Settings, Target, Scale, LayoutDashboard, BookCopy } from 'lucide-react';
 import {
   SidebarProvider,
   Sidebar,
@@ -37,6 +37,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/enrollments', label: 'Enrollments', icon: BookUser },
         { href: '/enquiries', label: 'Enquiries', icon: Target },
+        { href: '/sales', label: 'Sales', icon: BookCopy },
         { href: '/expenses', label: 'Expenses & Income', icon: HandCoins },
         { href: '/settings', label: 'Settings', icon: Settings },
     ];

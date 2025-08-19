@@ -41,6 +41,24 @@ export interface Course {
   fee: number;
 }
 
+export interface StudyMaterial {
+    id: string;
+    name: string;
+    price: number;
+}
+
+export interface Sale {
+    id: string;
+    customerName: string;
+    materialId: string;
+    materialName: string;
+    price: number;
+    medium: 'English' | 'Hindi';
+    collegeUniversity?: string;
+    saleDate: string;
+}
+
+
 // This is managed in Firestore and fetched dynamically.
 // Kept here only for reference for paymentModes.
 export const paymentModes = ["Cash", "UPI", "Bank Transfer"];
