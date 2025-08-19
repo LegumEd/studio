@@ -27,6 +27,7 @@ interface StudentProfileModalProps {
   onUpdateStudent: (student: Student) => void;
   courses: string[];
   onPrintForm: (student: Student) => void;
+  defaultTab?: "profile" | "payments" | "documents";
 }
 
 const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
@@ -46,7 +47,7 @@ const readFilesAsDataURL = async (files: FileList): Promise<DocumentFile[]> => {
 };
 
 
-export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses, onPrintForm }: StudentProfileModalProps) {
+export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpdateStudent, courses, onPrintForm, defaultTab = "profile" }: StudentProfileModalProps) {
   const [editedStudent, setEditedStudent] = useState<Student>(student);
   const [newPayment, setNewPayment] = useState({ amount: '', mode: 'Cash', date: format(new Date(), 'yyyy-MM-dd') });
   const { toast } = useToast();
@@ -188,7 +189,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                  <Button onClick={() => onPrintForm(editedStudent)} variant="secondary" className="w-full"><Printer className="mr-2 h-4 w-4" /> Print Form</Button>
             </div>
             <div className="w-3/4">
-                <Tabs defaultValue="profile" className="w-full h-full flex flex-col">
+                <Tabs defaultValue={defaultTab} className="w-full h-full flex flex-col">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="profile">Profile Details</TabsTrigger>
                         <TabsTrigger value="payments">Payments</TabsTrigger>

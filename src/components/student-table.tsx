@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Printer } from "lucide-react";
+import { MoreHorizontal, Printer, DollarSign } from "lucide-react";
 import type { Student } from "@/lib/types";
 import StudentProfileModal from "./student-profile-modal";
 import {
@@ -244,12 +244,20 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+  const [defaultTab, setDefaultTab] = useState("profile");
 
   const handleViewEdit = (student: Student) => {
     setSelectedStudent(student);
+    setDefaultTab("profile");
     setIsModalOpen(true);
   };
   
+  const handleDepositFee = (student: Student) => {
+    setSelectedStudent(student);
+    setDefaultTab("payments");
+    setIsModalOpen(true);
+  }
+
   const handleDeleteClick = (studentId: string) => {
     setStudentToDelete(studentId);
     setIsAlertOpen(true);
@@ -324,7 +332,11 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit Profile</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleDepositFee(student)}>
+                            <DollarSign className="mr-2 h-4 w-4" />
+                            Deposit Fee
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => handlePrintForm(student)}>
                             <Printer className="mr-2 h-4 w-4" />
                             Print Form
@@ -358,6 +370,7 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
             }}
             courses={courses}
             onPrintForm={handlePrintForm}
+            defaultTab={defaultTab}
         />
       )}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
