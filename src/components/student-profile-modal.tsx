@@ -341,7 +341,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                         <TabsTrigger value="documents">Documents</TabsTrigger>
                     </TabsList>
                    
-                        <TabsContent value="profile" className="h-full flex-1 overflow-y-auto">
+                        <TabsContent value="profile" className="flex-1 overflow-y-auto">
                              <ScrollArea className="h-full pr-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div><Label htmlFor="fullName">Full Name</Label><Input id="fullName" value={editedStudent.fullName} onChange={handleInputChange} /></div>
@@ -362,7 +362,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                 </div>
                             </ScrollArea>
                         </TabsContent>
-                        <TabsContent value="payments" className="h-full flex-1 flex flex-col overflow-hidden">
+                        <TabsContent value="payments" className="flex-1 flex flex-col overflow-hidden">
                             <div className="flex flex-col h-full">
                                 <div className="grid grid-cols-2 gap-4 mb-4 p-4 border rounded-lg">
                                     <div><Label>Amount</Label><Input type="number" value={newPayment.amount} onChange={e => setNewPayment(p => ({...p, amount: e.target.value}))} /></div>
@@ -403,7 +403,7 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
                                 </div>
                             </div>
                         </TabsContent>
-                        <TabsContent value="documents" className="h-full flex-1 overflow-y-auto">
+                        <TabsContent value="documents" className="flex-1 overflow-y-auto">
                              <ScrollArea className="h-full">
                                 <p className="text-muted-foreground">Document upload and management coming soon.</p>
                             </ScrollArea>
@@ -416,9 +416,5 @@ export default function StudentProfileModal({ isOpen, setIsOpen, student, onUpda
     </Dialog>
   );
 }
-
-    
-
-    
 
     
