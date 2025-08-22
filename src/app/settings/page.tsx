@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, increment } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const [newMaterialStock, setNewMaterialStock] = useState<number | ''>('');
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<StudyMaterial | null>(null);
+  const [stockToAdd, setStockToAdd] = useState<number | ''>('');
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{id: string; type: 'course' | 'material'} | null>(null);
   const { toast } = useToast();
@@ -126,6 +127,9 @@ export default function SettingsPage() {
       toast({ title: "Error", description: "Material name and a valid price are required.", variant: "destructive" });
       return;
     }
+    
+    const stockQuantity = (stockToAdd === '' || stockToAdd < 0) ? 0 : stockToAdd;
+
     try {
         const batch = writeBatch(db);
 
@@ -133,7 +137,14 @@ export default function SettingsPage() {
         batch.update(materialRef, { name: editingMaterial.name.trim(), price: editingMaterial.price });
         
         const inventoryRef = doc(db, "inventory", editingMaterial.id);
-        batch.update(inventoryRef, { title: editingMaterial.name.trim() });
+        const inventoryUpdateData: { title: string; totalStock?: any; availableStock?: any } = { 
+            title: editingMaterial.name.trim() 
+        };
+        if(stockQuantity > 0) {
+            inventoryUpdateData.totalStock = increment(stockQuantity);
+            inventoryUpdateData.availableStock = increment(stockQuantity);
+        }
+        batch.update(inventoryRef, inventoryUpdateData);
         
         await batch.commit();
 
@@ -143,6 +154,7 @@ export default function SettingsPage() {
         toast({ title: "Error", description: "Failed to update material.", variant: "destructive" });
     }
     setEditingMaterial(null);
+    setStockToAdd('');
   };
 
   const handleDeleteClick = (id: string, type: 'course' | 'material') => {
@@ -331,7 +343,7 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
       
-      <Dialog open={!!editingMaterial} onOpenChange={(isOpen) => !isOpen && setEditingMaterial(null)}>
+      <Dialog open={!!editingMaterial} onOpenChange={(isOpen) => { if (!isOpen) { setEditingMaterial(null); setStockToAdd(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Study Material</DialogTitle>
@@ -353,9 +365,18 @@ export default function SettingsPage() {
                 onChange={(e) => editingMaterial && setEditingMaterial({...editingMaterial, price: parseFloat(e.target.value) || 0})}
               />
             </div>
+             <div>
+              <Label>Add to Stock</Label>
+              <Input
+                type="number"
+                placeholder="e.g., 10"
+                value={stockToAdd}
+                onChange={(e) => setStockToAdd(parseInt(e.target.value) || '')}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setEditingMaterial(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => { setEditingMaterial(null); setStockToAdd(''); }}>Cancel</Button>
             <Button onClick={handleUpdateMaterial}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
