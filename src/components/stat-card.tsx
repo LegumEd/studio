@@ -24,5 +24,3 @@ export function StatCard({ title, value, icon, color = 'bg-blue-500' }: StatCard
         </Card>
     )
 }
-
-    

@@ -95,7 +95,9 @@ export default function DashboardPage() {
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
-                <div className="grid gap-4 md:grid-cols-3 p-4 pt-0">
+            </Card>
+
+             <div className="grid gap-4 md:grid-cols-2">
                  <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -114,19 +116,18 @@ export default function DashboardPage() {
                         <div className="text-2xl font-bold text-red-500">₹{totalExpenses.toLocaleString()}</div>
                     </CardContent>
                 </Card>
-                 <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
-                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
-                         <Scale className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`text-2xl font-bold ${netBalance >= 0 ? "text-blue-500" : "text-red-500"}`}>₹{netBalance.toLocaleString()}</div>
-                    </CardContent>
-                </Card>
             </div>
+             <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+                     <Scale className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                    <div className={`text-2xl font-bold ${netBalance >= 0 ? "text-blue-500" : "text-red-500"}`}>₹{netBalance.toLocaleString()}</div>
+                </CardContent>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3">
                 <StatCard title="Total Students" value={studentCount.toString()} icon={<Users className="h-5 w-5" />} color="bg-blue-500" />
                 <StatCard title="Total Courses" value={courseCount.toString()} icon={<BookOpen className="h-5 w-5" />} color="bg-orange-500" />
                 <StatCard title="Pending Enquiries" value={pendingEnquiries.toString()} icon={<Target className="h-5 w-5" />} color="bg-yellow-500" />
@@ -135,5 +136,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
