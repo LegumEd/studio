@@ -127,7 +127,7 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-3 gap-4">
                 <StatCard title="Total Students" value={studentCount.toString()} icon={<Users className="h-5 w-5" />} color="bg-blue-500" />
                 <StatCard title="Total Courses" value={courseCount.toString()} icon={<BookOpen className="h-5 w-5" />} color="bg-orange-500" />
                 <StatCard title="Pending Enquiries" value={pendingEnquiries.toString()} icon={<Target className="h-5 w-5" />} color="bg-yellow-500" />
