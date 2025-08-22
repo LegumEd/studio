@@ -128,9 +128,9 @@ export default function DashboardPage() {
             </Card>
 
             <div className="grid grid-cols-3 gap-4">
-                <StatCard icon={<Users className="h-5 w-5" />} title="Total Students" value={studentCount} color="bg-blue-500" />
-                <StatCard icon={<BookOpen className="h-5 w-5" />} title="Total Courses" value={courseCount} color="bg-orange-500" />
-                <StatCard icon={<Target className="h-5 w-5" />} title="Pending Enquiries" value={pendingEnquiries} color="bg-yellow-500" />
+                <StatCard icon={<Users className="h-5 w-5" />} value={studentCount} color="bg-blue-500" />
+                <StatCard icon={<BookOpen className="h-5 w-5" />} value={courseCount} color="bg-orange-500" />
+                <StatCard icon={<Target className="h-5 w-5" />} value={pendingEnquiries} color="bg-yellow-500" />
             </div>
         </main>
     </div>

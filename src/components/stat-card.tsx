@@ -4,12 +4,11 @@ import { cn } from "@/lib/utils";
 
 interface StatCardProps {
     icon: React.ReactNode;
-    title: string;
     value: number | string;
     color?: string;
 }
 
-export function StatCard({ icon, title, value, color = 'bg-blue-500' }: StatCardProps) {
+export function StatCard({ icon, value, color = 'bg-blue-500' }: StatCardProps) {
     return (
         <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
             <CardContent className="p-4 flex items-center gap-4">
@@ -17,7 +16,6 @@ export function StatCard({ icon, title, value, color = 'bg-blue-500' }: StatCard
                    {icon}
                 </div>
                 <div>
-                    <p className="text-sm font-medium text-muted-foreground">{title}</p>
                     <p className="text-xl font-bold">{value}</p>
                 </div>
             </CardContent>
