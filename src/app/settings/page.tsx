@@ -25,6 +25,7 @@ export default function SettingsPage() {
   const [newCourseFee, setNewCourseFee] = useState<number | '' >('');
   const [newMaterialName, setNewMaterialName] = useState("");
   const [newMaterialPrice, setNewMaterialPrice] = useState<number | ''>('');
+  const [newMaterialStock, setNewMaterialStock] = useState<number | ''>('');
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [editingMaterial, setEditingMaterial] = useState<StudyMaterial | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -71,6 +72,12 @@ export default function SettingsPage() {
       toast({ title: "Error", description: "Material name and a valid price are required.", variant: "destructive" });
       return;
     }
+    const stock = newMaterialStock === '' ? 0 : newMaterialStock;
+    if (stock < 0) {
+        toast({ title: "Error", description: "Initial stock cannot be negative.", variant: "destructive" });
+        return;
+    }
+
     try {
       const batch = writeBatch(db);
 
@@ -82,8 +89,8 @@ export default function SettingsPage() {
       const inventoryRef = doc(db, "inventory", materialRef.id);
       batch.set(inventoryRef, { 
         title: newMaterialName.trim(),
-        totalStock: 0,
-        availableStock: 0 
+        totalStock: stock,
+        availableStock: stock 
       });
 
       await batch.commit();
@@ -91,6 +98,7 @@ export default function SettingsPage() {
       toast({ title: "Success", description: "Study material and inventory item added." });
       setNewMaterialName("");
       setNewMaterialPrice('');
+      setNewMaterialStock('');
     } catch (error) {
       console.error("Error adding material:", error);
       toast({ title: "Error", description: "Failed to add material.", variant: "destructive" });
@@ -243,6 +251,7 @@ export default function SettingsPage() {
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mb-4">
                         <div className="flex-grow"><Label htmlFor="newMaterialName">Material Name</Label><Input id="newMaterialName" placeholder="e.g., Criminal Law Notes" value={newMaterialName} onChange={(e) => setNewMaterialName(e.target.value)} /></div>
                         <div className="sm:w-48"><Label htmlFor="newMaterialPrice">Price</Label><Input id="newMaterialPrice" type="number" placeholder="Enter price" value={newMaterialPrice} onChange={(e) => setNewMaterialPrice(parseFloat(e.target.value) || '')} /></div>
+                        <div className="sm:w-48"><Label htmlFor="newMaterialStock">Initial Stock</Label><Input id="newMaterialStock" type="number" placeholder="e.g., 50" value={newMaterialStock} onChange={(e) => setNewMaterialStock(parseInt(e.target.value) || '')} /></div>
                         <Button onClick={handleAddMaterial} className="w-full sm:w-auto">Add Material</Button>
                     </div>
                     <div className="border rounded-md">
