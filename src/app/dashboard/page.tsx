@@ -53,8 +53,8 @@ export default function DashboardPage() {
   }, [transactions]);
   
   const chartData = useMemo(() => {
-    const last30Days = eachDayOfInterval({ start: subDays(new Date(), 29), end: new Date() });
-    return last30Days.map(day => {
+    const last7Days = eachDayOfInterval({ start: subDays(new Date(), 6), end: new Date() });
+    return last7Days.map(day => {
         const dateString = format(day, 'yyyy-MM-dd');
         const dailyTransactions = transactions.filter(t => t.date === dateString);
         const income = dailyTransactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
@@ -75,7 +75,7 @@ export default function DashboardPage() {
             <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
                 <CardHeader>
                     <CardTitle>Financial Overview</CardTitle>
-                    <CardDescription>Last 30 Days Income vs. Expenses</CardDescription>
+                    <CardDescription>Last 7 Days Income vs. Expenses</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={250}>
@@ -97,7 +97,7 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
 
-             <div className="grid gap-4 md:grid-cols-2">
+             <div className="grid grid-cols-2 gap-4">
                  <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Income</CardTitle>
