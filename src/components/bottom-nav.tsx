@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, MessageSquareQuote, ShoppingCart, BarChart2, Settings } from 'lucide-react';
+import { Home, Users, MessageSquareQuote, ShoppingCart, BarChart2, Settings, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -11,8 +11,8 @@ const navItems = [
   { href: '/enrollments', label: 'Students', icon: Users },
   { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuote },
   { href: '/sales', label: 'Sales', icon: ShoppingCart },
+  { href: '/inventory', label: 'Inventory', icon: Package },
   { href: '/reports', label: 'Reports', icon: BarChart2 },
-  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function BottomNav() {

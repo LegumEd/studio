@@ -48,6 +48,14 @@ export interface StudyMaterial {
     price: number;
 }
 
+export interface InventoryItem {
+    id: string; // Corresponds to StudyMaterial ID
+    title: string;
+    totalStock: number;
+    availableStock: number;
+}
+
+
 export interface Sale {
     id: string;
     customerName: string;
@@ -65,5 +73,3 @@ export interface Sale {
 // This is managed in Firestore and fetched dynamically.
 // Kept here only for reference for paymentModes.
 export const paymentModes = ["Cash", "UPI", "Bank Transfer"];
-
-    

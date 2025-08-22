@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,8 +72,23 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await addDoc(collection(db, "materials"), { name: newMaterialName.trim(), price: newMaterialPrice });
-      toast({ title: "Success", description: "Study material added successfully." });
+      const batch = writeBatch(db);
+
+      // Add new material to 'materials' collection
+      const materialRef = doc(collection(db, "materials"));
+      batch.set(materialRef, { name: newMaterialName.trim(), price: newMaterialPrice });
+
+      // Add corresponding inventory item to 'inventory' collection
+      const inventoryRef = doc(db, "inventory", materialRef.id);
+      batch.set(inventoryRef, { 
+        title: newMaterialName.trim(),
+        totalStock: 0,
+        availableStock: 0 
+      });
+
+      await batch.commit();
+
+      toast({ title: "Success", description: "Study material and inventory item added." });
       setNewMaterialName("");
       setNewMaterialPrice('');
     } catch (error) {
@@ -104,9 +119,17 @@ export default function SettingsPage() {
       return;
     }
     try {
-      const materialRef = doc(db, "materials", editingMaterial.id);
-      await updateDoc(materialRef, { name: editingMaterial.name.trim(), price: editingMaterial.price });
-      toast({ title: "Success", description: "Material updated successfully." });
+        const batch = writeBatch(db);
+
+        const materialRef = doc(db, "materials", editingMaterial.id);
+        batch.update(materialRef, { name: editingMaterial.name.trim(), price: editingMaterial.price });
+        
+        const inventoryRef = doc(db, "inventory", editingMaterial.id);
+        batch.update(inventoryRef, { title: editingMaterial.name.trim() });
+        
+        await batch.commit();
+
+        toast({ title: "Success", description: "Material updated successfully." });
     } catch (error) {
         console.error("Error updating material:", error);
         toast({ title: "Error", description: "Failed to update material.", variant: "destructive" });
@@ -124,11 +147,21 @@ export default function SettingsPage() {
         const {id, type} = itemToDelete;
         const collectionName = type === 'course' ? 'courses' : 'materials';
         try {
-            await deleteDoc(doc(db, collectionName, id));
+            const batch = writeBatch(db);
+            
+            const itemRef = doc(db, collectionName, id);
+            batch.delete(itemRef);
+
+            if (type === 'material') {
+                const inventoryRef = doc(db, "inventory", id);
+                batch.delete(inventoryRef);
+            }
+
+            await batch.commit();
             toast({ title: "Success", description: `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully.` });
         } catch (error) {
             console.error(`Error deleting ${type}:`, error);
-            toast({ title: "Error", description: `Failed to delete ${type}.`, variant: "destructive" });
+            toast({ title: "Error", description: `Failed to delete ${type}. Note: Associated sales/inventory records might remain.`, variant: "destructive" });
         }
     }
     setIsAlertOpen(false);
@@ -324,7 +357,7 @@ export default function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {itemToDelete?.type}.
+              This action cannot be undone. This will permanently delete the {itemToDelete?.type} and its associated inventory record.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -337,5 +370,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

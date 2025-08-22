@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, runTransaction, getDoc, writeBatch, increment } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export default function SalesPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [saleToDelete, setSaleToDelete] = useState<string | null>(null);
+  const [saleToDelete, setSaleToDelete] = useState<Sale | null>(null);
   const { toast } = useToast();
 
   const {
@@ -107,29 +107,44 @@ export default function SalesPage() {
     }
 
     try {
-      const saleDate = format(new Date(), "yyyy-MM-dd");
-      const saleData = {
-          ...data,
-          materialName: selectedMaterial.name,
-          unitPrice: selectedMaterial.price,
-          totalPrice: totalPrice,
-      };
+      await runTransaction(db, async (transaction) => {
+        const inventoryRef = doc(db, "inventory", data.materialId);
+        const inventoryDoc = await transaction.get(inventoryRef);
 
-      if (editingSale) {
-        // Note: Editing a sale does not create a new transaction to avoid duplicates.
-        // To adjust income, the original transaction should be modified manually.
-        const saleRef = doc(db, "sales", editingSale.id);
-        await updateDoc(saleRef, saleData);
-        toast({ title: "Success", description: "Sale record updated successfully." });
-      } else {
-        // Add sale document
-        const saleDocRef = await addDoc(collection(db, "sales"), {
-          ...saleData,
-          saleDate: saleDate,
+        if (!inventoryDoc.exists()) {
+          throw new Error("Inventory record not found for this material.");
+        }
+
+        const availableStock = inventoryDoc.data().availableStock;
+        if (availableStock < data.quantity) {
+          throw new Error(`Not enough stock. Only ${availableStock} items available.`);
+        }
+        
+        // If editing, we need to revert the old stock change before applying the new one.
+        // For simplicity, we are blocking edits for now, as it requires complex logic.
+        if (editingSale) {
+           throw new Error("Editing sales is not supported in a way that safely updates inventory. Please delete and create a new sale.");
+        }
+
+        // Deduct from inventory
+        transaction.update(inventoryRef, {
+          availableStock: increment(-data.quantity)
         });
 
-        // Add corresponding income transaction
-        await addDoc(collection(db, "transactions"), {
+        // Create sale and transaction documents
+        const saleDate = format(new Date(), "yyyy-MM-dd");
+        const saleData = {
+            ...data,
+            materialName: selectedMaterial.name,
+            unitPrice: selectedMaterial.price,
+            totalPrice: totalPrice,
+        };
+
+        const saleDocRef = doc(collection(db, "sales"));
+        transaction.set(saleDocRef, { ...saleData, saleDate });
+
+        const transactionDocRef = doc(collection(db, "transactions"));
+        transaction.set(transactionDocRef, {
             description: `Sale of ${saleData.quantity} x ${saleData.materialName} to ${saleData.customerName}`,
             amount: saleData.totalPrice,
             type: "Income",
@@ -137,29 +152,41 @@ export default function SalesPage() {
             date: saleDate,
             saleId: saleDocRef.id
         });
-        
-        toast({ title: "Success", description: "Sale recorded successfully." });
-      }
+      });
+
+      toast({ title: "Success", description: "Sale recorded and inventory updated." });
       setIsFormOpen(false);
       setEditingSale(null);
-    } catch (error) {
-      console.error("Error submitting sale:", error);
-      toast({ title: "Error", description: "Failed to save sale.", variant: "destructive" });
+    } catch (error: any) {
+      console.error("Error processing sale:", error);
+      toast({ title: "Error", description: error.message || "Failed to process sale.", variant: "destructive" });
     }
   };
   
-  const handleDeleteClick = (id: string) => {
-      setSaleToDelete(id);
+  const handleDeleteClick = (sale: Sale) => {
+      setSaleToDelete(sale);
       setIsAlertOpen(true);
   }
 
   const confirmDelete = async () => {
     if (saleToDelete) {
         try {
-            // Note: Deleting a sale does not automatically delete the corresponding transaction.
-            // This needs to be handled manually from the Expenses & Income page if required.
-            await deleteDoc(doc(db, "sales", saleToDelete));
-            toast({ title: "Success", description: "Sale record deleted successfully." });
+            const batch = writeBatch(db);
+
+            // Delete the sale document
+            const saleRef = doc(db, "sales", saleToDelete.id);
+            batch.delete(saleRef);
+            
+            // Re-add the quantity to inventory
+            const inventoryRef = doc(db, "inventory", saleToDelete.materialId);
+            batch.update(inventoryRef, { availableStock: increment(saleToDelete.quantity) });
+
+            // Note: Deleting the corresponding transaction is complex as we can't easily query for it.
+            // It should be deleted manually from the Expenses & Income page if needed.
+
+            await batch.commit();
+
+            toast({ title: "Success", description: "Sale record deleted and stock restored." });
         } catch (error) {
             console.error("Error deleting sale:", error);
             toast({ title: "Error", description: "Failed to delete sale.", variant: "destructive" });
@@ -294,8 +321,8 @@ export default function SalesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => openForm(sale)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(sale.id)} className="text-destructive">Delete</DropdownMenuItem>
+                          {/* <DropdownMenuItem onSelect={() => openForm(sale)}>Edit</DropdownMenuItem> */}
+                          <DropdownMenuItem onSelect={() => handleDeleteClick(sale)} className="text-destructive">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </CardContent>
@@ -370,7 +397,7 @@ export default function SalesPage() {
               </div>
               <DialogFooter>
                 <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                <Button type="submit">Save Sale</Button>
+                <Button type="submit" disabled={!!editingSale}>Save Sale</Button>
               </DialogFooter>
           </form>
         </DialogContent>
@@ -381,7 +408,7 @@ export default function SalesPage() {
             <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the sale record.
+                This will permanently delete the sale record and RESTORE the sold quantity back to inventory.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -394,5 +421,3 @@ export default function SalesPage() {
     </div>
   );
 }
-
-    
