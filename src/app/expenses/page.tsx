@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, PlusCircle, ArrowUpRight, ArrowDownLeft, Scale, Printer } from "lucide-react";
@@ -19,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
+import { PageHeader } from '@/components/page-header';
 
 const transactionSchema = z.object({
   description: z.string().min(2, "Description is required"),
@@ -213,10 +213,16 @@ export default function ExpensesPage() {
 
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Expenses & Income</h2>
-      </div>
+     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <PageHeader title="Expenses & Income" subtitle="Track all income and expenses">
+            <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Transaction
+                </span>
+            </Button>
+        </PageHeader>
+        <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
        <div className="grid gap-4 md:grid-cols-3">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -248,12 +254,22 @@ export default function ExpensesPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Transactions</CardTitle>
-          <CardDescription>Track all income and expenses.</CardDescription>
-           <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 mt-4">
-              <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <CardTitle>Transactions</CardTitle>
+                <CardDescription>A list of all income and expense records.</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" className="h-8 gap-1 no-print" onClick={handlePrint}>
+                <Printer className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Print Report
+                </span>
+              </Button>
+            </div>
+           <div className="flex items-center gap-2 mt-4">
+              <div className="flex-1">
                 <Select value={filter} onValueChange={setFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -263,52 +279,28 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="ml-auto flex items-center gap-2">
-                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handlePrint}>
-                    <Printer className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Print Report
-                    </span>
-                 </Button>
-                 <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Transaction
-                    </span>
-                </Button>
-              </div>
             </div>
         </CardHeader>
         <CardContent>
-           <div className="rounded-md border">
-             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell>{format(new Date(t.date), "PPP")}</TableCell>
-                      <TableCell className="font-medium max-w-[200px] truncate">{t.description}</TableCell>
-                      <TableCell>{t.category}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 text-xs rounded-full ${t.type === 'Income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {t.type}
-                        </span>
-                      </TableCell>
-                      <TableCell className={`text-right font-medium ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
-                          {t.type === 'Income' ? '+' : '-'}₹{t.amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                         <DropdownMenu>
+           <div className="grid gap-4">
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map((t) => (
+                <Card key={t.id} className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className={`p-3 rounded-full ${t.type === 'Income' ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
+                           {t.type === 'Income' ? <ArrowUpRight className="h-5 w-5 text-green-600" /> : <ArrowDownLeft className="h-5 w-5 text-red-600" />}
+                        </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-gray-900 dark:text-gray-50">{t.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{t.category}</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{format(new Date(t.date), "PPP")}</p>
+                        </div>
+                        <div className="text-right">
+                           <p className={`text-lg font-bold ${t.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
+                              {t.type === 'Income' ? '+' : '-'}₹{t.amount.toLocaleString()}
+                           </p>
+                        </div>
+                        <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-haspopup="true" size="icon" variant="ghost">
                               <MoreHorizontal className="h-4 w-4" />
@@ -321,17 +313,15 @@ export default function ExpensesPage() {
                             <DropdownMenuItem onSelect={() => handleDeleteClick(t.id)} className="text-destructive">Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">No transactions found.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-           </div>
+                    </CardContent>
+                </Card>
+              ))
+            ) : (
+                <div className="text-center py-12 text-gray-500">
+                    <p>No transactions found.</p>
+                </div>
+            )}
+            </div>
         </CardContent>
       </Card>
       
@@ -413,7 +403,8 @@ export default function ExpensesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-    </main>
+     </div>
   );
 }
+
+    

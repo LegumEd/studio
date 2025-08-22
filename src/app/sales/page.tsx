@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, PlusCircle, Printer } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Printer, ShoppingCart, User, IndianRupee } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +19,7 @@ import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import type { Sale, StudyMaterial } from "@/lib/types";
+import { PageHeader } from '@/components/page-header';
 
 const saleSchema = z.object({
   customerName: z.string().min(2, "Customer name is required"),
@@ -231,62 +231,60 @@ export default function SalesPage() {
 
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Notes & Books Sales</h2>
-      </div>
+    <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <PageHeader title="Notes & Books Sales" subtitle="Track all sales of study materials">
+            <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Sale
+                </span>
+            </Button>
+        </PageHeader>
+        <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
+          <div className="flex flex-col md:flex-row justify-between md:items-start">
+            <div className="flex-1">
               <CardTitle>Manage Sales</CardTitle>
-              <CardDescription>Track all sales of study materials.</CardDescription>
+              <CardDescription>A list of all sales of study materials.</CardDescription>
             </div>
-            <div className="text-right">
+            <div className="mt-4 md:mt-0 md:text-right">
               <p className="text-sm text-muted-foreground">Total Revenue</p>
               <p className="text-2xl font-bold">₹{totalRevenue.toLocaleString()}</p>
             </div>
           </div>
-           <div className="flex items-center gap-8 mt-4">
-              <div className="ml-auto flex items-center gap-2">
-                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handlePrint}>
+           <div className="flex items-center justify-end gap-2 mt-4">
+                 <Button size="sm" variant="outline" className="h-8 gap-1 no-print" onClick={handlePrint}>
                     <Printer className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Print Report
                     </span>
                  </Button>
-                 <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Sale
-                    </span>
-                </Button>
-              </div>
             </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Material</TableHead>
-                <TableHead>Qty</TableHead>
-                <TableHead className="text-right">Total Price</TableHead>
-                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <div className="grid gap-4">
               {sales.length > 0 ? (
                 sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell>{format(new Date(sale.saleDate), "PPP")}</TableCell>
-                    <TableCell className="font-medium">{sale.customerName}</TableCell>
-                    <TableCell>{sale.materialName}</TableCell>
-                    <TableCell>{sale.quantity}</TableCell>
-                    <TableCell className="text-right">₹{(sale.totalPrice || 0).toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
+                  <Card key={sale.id} className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                           <ShoppingCart className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-2">
+                                <User className="h-4 w-4 text-gray-500" />
+                                {sale.customerName}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{sale.materialName} (x{sale.quantity})</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{format(new Date(sale.saleDate), "PPP")}</p>
+                        </div>
+                        <div className="text-right">
+                           <p className="text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center gap-1">
+                             <IndianRupee className="h-4 w-4" />
+                             {(sale.totalPrice || 0).toLocaleString()}
+                           </p>
+                        </div>
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -300,16 +298,14 @@ export default function SalesPage() {
                           <DropdownMenuItem onSelect={() => handleDeleteClick(sale.id)} className="text-destructive">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                    </CardContent>
+                  </Card>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">No sales found.</TableCell>
-                </TableRow>
+                 <div className="text-center py-12 text-gray-500">
+                    <p>No sales found.</p>
+                </div>
               )}
-            </TableBody>
-          </Table>
           </div>
         </CardContent>
       </Card>
@@ -394,6 +390,9 @@ export default function SalesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </main>
+        </main>
+    </div>
   );
 }
+
+    

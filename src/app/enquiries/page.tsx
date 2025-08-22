@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, PlusCircle, Printer } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Printer, User, Book, Phone, Calendar as CalendarIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +19,8 @@ import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+import { Badge } from '@/components/ui/badge';
+import { PageHeader } from '@/components/page-header';
 
 const enquirySchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -204,100 +205,104 @@ export default function EnquiriesPage() {
 
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Enquiries</h2>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Enquiries</CardTitle>
-          <CardDescription>Manage and track all student enquiries.</CardDescription>
-           <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 mt-4">
-              <div className="flex gap-4 w-full md:w-auto">
-                <Input
-                  placeholder="Search by name or mobile..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="max-w-xs"
-                />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+    <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+      <PageHeader title="Enquiries" subtitle="Manage and track all student enquiries">
+         <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                Add Enquiry
+            </span>
+        </Button>
+      </PageHeader>
+      <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
+        <Card>
+            <CardHeader>
+               <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex-1">
+                    <CardTitle>Manage Enquiries</CardTitle>
+                    <CardDescription>A list of all student enquiries in your academy.</CardDescription>
+                  </div>
+                  <Button size="sm" variant="outline" className="h-8 gap-1 no-print" onClick={handlePrint}>
+                        <Printer className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Print Report
+                        </span>
+                  </Button>
+                </div>
+               <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-2 mt-4">
+                  <div className="flex-1 w-full md:w-auto">
+                    <Input
+                      placeholder="Search by name or mobile..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex-1 w-full md:w-auto">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filter by status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                  {filteredEnquiries.length > 0 ? (
+                    filteredEnquiries.map((enquiry) => (
+                      <Card key={enquiry.id} className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                        <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                            <div className="flex-1 grid gap-2">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-semibold text-gray-900 dark:text-gray-50 flex items-center gap-2"><User className="h-4 w-4 text-gray-500"/>{enquiry.name}</p>
+                                    <Badge 
+                                        className={
+                                            enquiry.status === 'Enrolled' ? 'bg-green-100 text-green-800' :
+                                            enquiry.status === 'Followed-up' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        }
+                                    >
+                                        {enquiry.status}
+                                    </Badge>
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2"><Book className="h-4 w-4"/>{enquiry.course}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2"><Phone className="h-4 w-4"/>{enquiry.mobile}</p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-2"><CalendarIcon className="h-4 w-4"/>Enquired on: {format(new Date(enquiry.enquiryDate), "PPP")}</p>
+                                {enquiry.notes && <p className="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-2 rounded-md mt-2">{enquiry.notes}</p>}
+                            </div>
+                            <div className="flex sm:flex-col justify-end gap-2 no-print">
+                               <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button aria-haspopup="true" size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem onSelect={() => openForm(enquiry)}>Edit</DropdownMenuItem>
+                                  <DropdownMenuItem onSelect={() => handleDeleteClick(enquiry.id)} className="text-destructive">Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                        <p>No enquiries found.</p>
+                    </div>
+                  )}
               </div>
-              <div className="ml-auto flex items-center gap-2">
-                 <Button size="sm" variant="outline" className="h-8 gap-1" onClick={handlePrint}>
-                    <Printer className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Print Report
-                    </span>
-                 </Button>
-                 <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Add Enquiry
-                    </span>
-                </Button>
-              </div>
-            </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Mobile</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEnquiries.length > 0 ? (
-                filteredEnquiries.map((enquiry) => (
-                  <TableRow key={enquiry.id}>
-                    <TableCell>{format(new Date(enquiry.enquiryDate), "PPP")}</TableCell>
-                    <TableCell className="font-medium">{enquiry.name}</TableCell>
-                    <TableCell>{enquiry.mobile}</TableCell>
-                    <TableCell>{enquiry.course}</TableCell>
-                    <TableCell>{enquiry.status}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{enquiry.notes}</TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => openForm(enquiry)}>Edit</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(enquiry.id)} className="text-destructive">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center h-24">No enquiries found.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          </div>
-        </CardContent>
-      </Card>
-      
+            </CardContent>
+        </Card>
+      </main>
+
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogHeader>
@@ -375,7 +380,8 @@ export default function EnquiriesPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-    </main>
+    </div>
   );
 }
+
+    

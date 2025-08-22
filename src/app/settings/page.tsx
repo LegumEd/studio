@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import type { Course, StudyMaterial } from "@/lib/types";
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/page-header';
 
 export default function SettingsPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -135,10 +136,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Settings</h2>
-      </div>
+    <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+    <PageHeader title="Settings" />
+    <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
       <Tabs defaultValue="courses">
         <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="courses">Manage Courses</TabsTrigger>
@@ -151,12 +151,13 @@ export default function SettingsPage() {
                     <CardDescription>Add, edit, or delete courses offered by the academy.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-end gap-2 mb-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mb-4">
                         <div className="flex-grow"><Label htmlFor="newCourseName">Course Name</Label><Input id="newCourseName" placeholder="Enter new course name" value={newCourseName} onChange={(e) => setNewCourseName(e.target.value)} /></div>
-                        <div className="w-48"><Label htmlFor="newCourseFee">Fee</Label><Input id="newCourseFee" type="number" placeholder="Enter fee" value={newCourseFee} onChange={(e) => setNewCourseFee(parseFloat(e.target.value) || '')} /></div>
-                        <Button onClick={handleAddCourse}>Add Course</Button>
+                        <div className="sm:w-48"><Label htmlFor="newCourseFee">Fee</Label><Input id="newCourseFee" type="number" placeholder="Enter fee" value={newCourseFee} onChange={(e) => setNewCourseFee(parseFloat(e.target.value) || '')} /></div>
+                        <Button onClick={handleAddCourse} className="w-full sm:w-auto">Add Course</Button>
                     </div>
                     <div className="border rounded-md">
+                      <div className="w-full overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
@@ -194,6 +195,7 @@ export default function SettingsPage() {
                             )}
                         </TableBody>
                         </Table>
+                      </div>
                     </div>
                 </CardContent>
             </Card>
@@ -205,12 +207,13 @@ export default function SettingsPage() {
                     <CardDescription>Add, edit, or delete notes, books, and other study materials.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-end gap-2 mb-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 mb-4">
                         <div className="flex-grow"><Label htmlFor="newMaterialName">Material Name</Label><Input id="newMaterialName" placeholder="e.g., Criminal Law Notes" value={newMaterialName} onChange={(e) => setNewMaterialName(e.target.value)} /></div>
-                        <div className="w-48"><Label htmlFor="newMaterialPrice">Price</Label><Input id="newMaterialPrice" type="number" placeholder="Enter price" value={newMaterialPrice} onChange={(e) => setNewMaterialPrice(parseFloat(e.target.value) || '')} /></div>
-                        <Button onClick={handleAddMaterial}>Add Material</Button>
+                        <div className="sm:w-48"><Label htmlFor="newMaterialPrice">Price</Label><Input id="newMaterialPrice" type="number" placeholder="Enter price" value={newMaterialPrice} onChange={(e) => setNewMaterialPrice(parseFloat(e.target.value) || '')} /></div>
+                        <Button onClick={handleAddMaterial} className="w-full sm:w-auto">Add Material</Button>
                     </div>
                     <div className="border rounded-md">
+                      <div className="w-full overflow-x-auto">
                         <Table>
                         <TableHeader>
                             <TableRow>
@@ -248,6 +251,7 @@ export default function SettingsPage() {
                             )}
                         </TableBody>
                         </Table>
+                      </div>
                     </div>
                 </CardContent>
             </Card>
@@ -330,6 +334,8 @@ export default function SettingsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </main>
+    </div>
   );
 }
 
+    
