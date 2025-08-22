@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, Target, Scale, TrendingUp, TrendingDown, IndianRupee } from 'lucide-react';
+import { Users, BookOpen, Target, Scale, TrendingUp, TrendingDown } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -72,13 +72,6 @@ export default function DashboardPage() {
     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
         <PageHeader title="Dashboard" subtitle="Welcome to Lex Legum Academy" />
         <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Students" value={studentCount.toString()} icon={<Users className="h-4 w-4" />} color="bg-blue-500" />
-                <StatCard title="Total Courses" value={courseCount.toString()} icon={<BookOpen className="h-4 w-4" />} color="bg-orange-500" />
-                <StatCard title="Pending Enquiries" value={pendingEnquiries.toString()} icon={<Target className="h-4 w-4" />} color="bg-yellow-500" />
-                <StatCard title="Net Balance" value={`₹${netBalance.toLocaleString()}`} icon={<Scale className="h-4 w-4" />} color={netBalance >= 0 ? "bg-green-500" : "bg-red-500"} />
-            </div>
-
             <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
                 <CardHeader>
                     <CardTitle>Financial Overview</CardTitle>
@@ -102,9 +95,7 @@ export default function DashboardPage() {
                         </LineChart>
                     </ResponsiveContainer>
                 </CardContent>
-            </Card>
-
-            <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3 p-4 pt-0">
                  <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -123,6 +114,22 @@ export default function DashboardPage() {
                         <div className="text-2xl font-bold text-red-500">₹{totalExpenses.toLocaleString()}</div>
                     </CardContent>
                 </Card>
+                 <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+                         <Scale className="h-4 w-4 text-blue-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className={`text-2xl font-bold ${netBalance >= 0 ? "text-blue-500" : "text-red-500"}`}>₹{netBalance.toLocaleString()}</div>
+                    </CardContent>
+                </Card>
+            </div>
+            </Card>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <StatCard title="Total Students" value={studentCount.toString()} icon={<Users className="h-5 w-5" />} color="bg-blue-500" />
+                <StatCard title="Total Courses" value={courseCount.toString()} icon={<BookOpen className="h-5 w-5" />} color="bg-orange-500" />
+                <StatCard title="Pending Enquiries" value={pendingEnquiries.toString()} icon={<Target className="h-5 w-5" />} color="bg-yellow-500" />
             </div>
         </main>
     </div>
