@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, increment } from "firebase/firestore";
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, increment, getDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,31 +127,42 @@ export default function SettingsPage() {
       toast({ title: "Error", description: "Material name and a valid price are required.", variant: "destructive" });
       return;
     }
-    
-    const stockQuantity = (stockToAdd === '' || stockToAdd < 0) ? 0 : stockToAdd;
+
+    const stockQuantity = (stockToAdd === '' || stockToAdd < 0) ? 0 : Number(stockToAdd);
 
     try {
-        const batch = writeBatch(db);
+      const batch = writeBatch(db);
 
-        const materialRef = doc(db, "materials", editingMaterial.id);
-        batch.update(materialRef, { name: editingMaterial.name.trim(), price: editingMaterial.price });
-        
-        const inventoryRef = doc(db, "inventory", editingMaterial.id);
-        const inventoryUpdateData: { title: string; totalStock?: any; availableStock?: any } = { 
-            title: editingMaterial.name.trim() 
-        };
-        if(stockQuantity > 0) {
-            inventoryUpdateData.totalStock = increment(stockQuantity);
-            inventoryUpdateData.availableStock = increment(stockQuantity);
-        }
-        batch.update(inventoryRef, inventoryUpdateData);
-        
-        await batch.commit();
+      const materialRef = doc(db, "materials", editingMaterial.id);
+      batch.update(materialRef, { name: editingMaterial.name.trim(), price: editingMaterial.price });
 
-        toast({ title: "Success", description: "Material updated successfully." });
+      const inventoryRef = doc(db, "inventory", editingMaterial.id);
+      const inventoryDoc = await getDoc(inventoryRef);
+
+      if (inventoryDoc.exists()) {
+          const inventoryUpdateData: { title: string; totalStock?: any; availableStock?: any } = {
+              title: editingMaterial.name.trim()
+          };
+          if (stockQuantity > 0) {
+              inventoryUpdateData.totalStock = increment(stockQuantity);
+              inventoryUpdateData.availableStock = increment(stockQuantity);
+          }
+          batch.update(inventoryRef, inventoryUpdateData);
+      } else {
+          // If inventory doc doesn't exist, create it
+          batch.set(inventoryRef, {
+              title: editingMaterial.name.trim(),
+              totalStock: stockQuantity,
+              availableStock: stockQuantity,
+          });
+      }
+      
+      await batch.commit();
+      toast({ title: "Success", description: "Material updated successfully." });
+
     } catch (error) {
-        console.error("Error updating material:", error);
-        toast({ title: "Error", description: "Failed to update material.", variant: "destructive" });
+      console.error("Error updating material:", error);
+      toast({ title: "Error", description: "Failed to update material.", variant: "destructive" });
     }
     setEditingMaterial(null);
     setStockToAdd('');
