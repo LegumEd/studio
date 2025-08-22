@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -13,6 +14,10 @@ export default {
         body: ['Inter', 'sans-serif'],
         headline: ['"Space Grotesk"', 'sans-serif'],
         code: ['monospace'],
+      },
+      boxShadow: {
+        soft: '0 4px 12px rgba(0, 0, 0, 0.05)',
+        'soft-dark': '0 4px 12px rgba(0, 0, 0, 0.15)',
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -70,6 +75,7 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        '2xl': 'calc(var(--radius) + 8px)',
       },
       keyframes: {
         'accordion-down': {
@@ -97,3 +103,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
+
+    

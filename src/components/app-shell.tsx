@@ -2,21 +2,14 @@
 "use client"
 
 import React, { useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { BottomNav } from './bottom-nav';
+import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookUser, HandCoins, Settings, Target, Scale, LayoutDashboard, BookCopy } from 'lucide-react';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-import Header from './header';
-import { useToast } from "@/hooks/use-toast";
+import { Home, Users, MessageSquareQuestion, ShoppingCart, BarChart2, Settings, Scale } from 'lucide-react';
+import { ThemeToggle } from './theme-toggle';
+
 
 const AppShell = ({ children }: { children: React.ReactNode }) => {
     const pathname = usePathname();
@@ -32,57 +25,65 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
             sessionStorage.setItem('welcomeToastShown', 'true');
         }
     }, [toast]);
-
-    const menuItems = [
-        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/enrollments', label: 'Enrollments', icon: BookUser },
-        { href: '/enquiries', label: 'Enquiries', icon: Target },
-        { href: '/sales', label: 'Sales', icon: BookCopy },
-        { href: '/expenses', label: 'Expenses & Income', icon: HandCoins },
-        { href: '/settings', label: 'Settings', icon: Settings },
-    ];
     
+    const navItems = [
+      { href: '/dashboard', label: 'Dashboard', icon: Home },
+      { href: '/enrollments', label: 'Students', icon: Users },
+      { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuestion },
+      { href: '/sales', label: 'Sales', icon: ShoppingCart },
+      { href: '/reports', label: 'Reports', icon: BarChart2 },
+      { href: '/settings', label: 'Settings', icon: Settings },
+    ];
+
     return (
-        <SidebarProvider>
-            <Sidebar>
-                <SidebarHeader>
-                     <div className="flex items-center gap-2 p-2">
-                        <Scale className="h-8 w-8 text-sidebar-primary" />
-                        <h1 className="text-xl font-headline font-semibold text-sidebar-primary group-data-[collapsible=icon]:hidden">
-                            Management
-                        </h1>
+        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+           <SidebarProvider>
+                {/* Desktop Sidebar */}
+                <Sidebar className="hidden md:flex">
+                    <SidebarHeader>
+                        <div className="flex items-center gap-2 p-2">
+                            <Scale className="h-8 w-8 text-sidebar-primary" />
+                            <h1 className="text-xl font-headline font-semibold text-sidebar-primary group-data-[state=collapsed]:hidden">
+                                Lex Legum
+                            </h1>
+                        </div>
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <SidebarMenu>
+                            {navItems.map((item) => (
+                                <SidebarMenuItem key={item.href}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={pathname === item.href}
+                                        tooltip={item.label}
+                                    >
+                                        <Link href={item.href}>
+                                            <item.icon />
+                                            <span>{item.label}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarContent>
+                     <div className="p-2 mt-auto flex justify-center">
+                        <ThemeToggle />
                     </div>
-                </SidebarHeader>
-                <SidebarContent>
-                    <SidebarMenu>
-                        {menuItems.map((item) => (
-                             <SidebarMenuItem key={item.href}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={pathname === item.href}
-                                    tooltip={item.label}
-                                >
-                                    <Link href={item.href}>
-                                        <item.icon />
-                                        <span>{item.label}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
-                </SidebarContent>
-                <SidebarFooter>
-                    {/* Footer content if any */}
-                </SidebarFooter>
-            </Sidebar>
-            <div className="flex flex-col h-full w-full">
-                <Header />
-                <div className="flex-1 overflow-y-auto">
-                    {children}
+                </Sidebar>
+
+                {/* Main Content */}
+                <div className="flex flex-1 flex-col overflow-hidden">
+                    <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+                        {children}
+                    </main>
+                    {/* Mobile Bottom Navigation */}
+                    <BottomNav />
                 </div>
-            </div>
-        </SidebarProvider>
-    )
-}
+            </SidebarProvider>
+        </div>
+    );
+};
 
 export default AppShell;
+
+    

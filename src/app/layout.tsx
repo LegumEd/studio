@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import AppShell from "@/components/app-shell";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+
 
 export const metadata: Metadata = {
   title: "Lex Legum Academy Student Hub",
@@ -29,11 +31,20 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
-        <AppShell>
-            {children}
-        </AppShell>
-        <Toaster />
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+        >
+            <AppShell>
+                {children}
+            </AppShell>
+            <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+
+    

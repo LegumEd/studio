@@ -11,14 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription
-} from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 import StudentTable from "@/components/student-table";
 import StudentRegistrationForm from "@/components/student-registration-form";
 import type { Student, Course } from "@/lib/types";
@@ -26,6 +19,7 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { PageHeader } from "@/components/page-header";
 
 export default function EnrollmentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -120,24 +114,34 @@ export default function EnrollmentsPage() {
 
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight font-headline">Student Records</h2>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Students</CardTitle>
-          <CardDescription>Search, filter, and manage all enrolled students.</CardDescription>
-          <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8 pt-4">
-            <div className="flex gap-4 w-full md:w-auto">
-                <Input
-                    placeholder="Search by name or roll number..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="max-w-xs"
-                />
+     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <PageHeader title="Students" subtitle="Manage all enrolled students">
+           <StudentRegistrationForm 
+                courses={courses}
+                onStudentAdd={addStudent}
+                triggerButton={
+                  <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Add Student
+                    </span>
+                  </Button>
+                }
+              />
+        </PageHeader>
+        <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
+            <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-8">
+                <div className="relative w-full md:w-auto md:flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                    <Input
+                        placeholder="Search by name or roll number..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
                 <Select value={courseFilter} onValueChange={setCourseFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full md:w-[200px]">
                         <SelectValue placeholder="Filter by course" />
                     </SelectTrigger>
                     <SelectContent>
@@ -150,31 +154,16 @@ export default function EnrollmentsPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <StudentRegistrationForm 
-                courses={courses}
-                onStudentAdd={addStudent}
-                triggerButton={
-                  <Button size="sm" className="h-8 gap-1">
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                      Add Student
-                    </span>
-                  </Button>
-                }
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <StudentTable 
-            students={filteredStudents} 
-            onUpdateStudent={updateStudent}
-            onDeleteStudent={deleteStudent}
-            courses={courses.map(c => c.name)}
-          />
-        </CardContent>
-      </Card>
-    </main>
+
+            <StudentTable 
+                students={filteredStudents} 
+                onUpdateStudent={updateStudent}
+                onDeleteStudent={deleteStudent}
+                courses={courses.map(c => c.name)}
+            />
+        </main>
+    </div>
   );
 }
+
+    

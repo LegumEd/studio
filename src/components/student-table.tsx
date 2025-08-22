@@ -34,6 +34,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { format } from "date-fns";
+import { Card, CardContent } from "./ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface StudentTableProps {
   students: Student[];
@@ -277,6 +279,61 @@ const handlePrintForm = (student: Student, paymentHistory: Payment[]) => {
     win?.print();
 }
 
+const StudentCard = ({student, onViewEdit, onDepositFee, onDeleteClick}: {
+    student: Student, 
+    onViewEdit: (s: Student) => void,
+    onDepositFee: (s: Student) => void,
+    onDeleteClick: (id: string) => void
+}) => {
+    const due = student.totalFee - student.amountPaid;
+    const status = due <= 0 ? "Paid" : "Pending";
+    const fallbackInitials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+
+    return (
+        <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+            <CardContent className="p-4 flex items-center gap-4">
+                <Avatar className="h-12 w-12">
+                    <AvatarImage src={student.photo || ""} alt={student.fullName} />
+                    <AvatarFallback>{fallbackInitials}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                    <p className="font-semibold text-gray-900 dark:text-gray-50">{student.fullName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{student.roll}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{student.course}</p>
+                </div>
+                <div className="text-right">
+                     <Badge variant={status === "Paid" ? "default" : "destructive"} className={status === "Paid" ? "bg-green-600 dark:bg-green-700" : "bg-red-600 dark:bg-red-700"}>
+                        {status}
+                      </Badge>
+                      <p className="text-sm font-medium mt-1">Due: ₹{due.toLocaleString()}</p>
+                </div>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuItem onSelect={() => onViewEdit(student)}>View/Edit Profile</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => onDepositFee(student)}>
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Deposit Fee
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => handlePrintForm(student, student.paymentHistory || [])}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Print Form
+                      </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => onDeleteClick(student.id)} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function StudentTable({ students, courses, onUpdateStudent, onDeleteStudent }: StudentTableProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -311,91 +368,22 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
 
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="hidden w-[100px] sm:table-cell">
-                <span className="sr-only">Image</span>
-              </TableHead>
-              <TableHead>Roll No.</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Course</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell text-right">Fee Paid</TableHead>
-              <TableHead className="hidden md:table-cell text-right">Due</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.length > 0 ? (
-              students.map((student) => {
-                const due = student.totalFee - student.amountPaid;
-                const status = due <= 0 ? "Paid" : "Pending";
-                return (
-                  <TableRow key={student.id} className="hover:bg-muted/50">
-                    <TableCell className="hidden sm:table-cell">
-                      <img
-                        alt="Student photo"
-                        className="aspect-square rounded-md object-cover"
-                        height="64"
-                        src={student.photo || "https://placehold.co/64x64.png"}
-                        width="64"
-                        data-ai-hint="student portrait"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">{student.roll}</TableCell>
-                    <TableCell className="font-medium">{student.fullName}</TableCell>
-                    <TableCell>{student.course}</TableCell>
-                    <TableCell>
-                      <Badge variant={status === "Paid" ? "default" : "destructive"} className={status === "Paid" ? "bg-green-600" : ""}>
-                        {status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-right">
-                      ₹{student.amountPaid.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell text-right">
-                      ₹{due.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onSelect={() => handleViewEdit(student)}>View/Edit Profile</DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handleDepositFee(student)}>
-                            <DollarSign className="mr-2 h-4 w-4" />
-                            Deposit Fee
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => handlePrintForm(student, student.paymentHistory || [])}>
-                            <Printer className="mr-2 h-4 w-4" />
-                            Print Form
-                          </DropdownMenuItem>
-                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onSelect={() => handleDeleteClick(student.id)} className="text-destructive focus:text-destructive focus:bg-destructive/10">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center h-24">
-                  No students found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {students.length > 0 ? (
+          students.map((student) => (
+            <StudentCard
+                key={student.id}
+                student={student}
+                onViewEdit={handleViewEdit}
+                onDepositFee={handleDepositFee}
+                onDeleteClick={handleDeleteClick}
+            />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            No students found.
+          </div>
+        )}
       </div>
       {selectedStudent && (
         <StudentProfileModal
@@ -429,3 +417,5 @@ export default function StudentTable({ students, courses, onUpdateStudent, onDel
     </>
   );
 }
+
+    
