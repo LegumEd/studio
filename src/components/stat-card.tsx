@@ -1,25 +1,19 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
-    title: string;
-    value: string;
     icon: React.ReactNode;
     color?: string;
 }
 
-export function StatCard({ title, value, icon, color = 'bg-blue-500' }: StatCardProps) {
+export function StatCard({ icon, color = 'bg-blue-500' }: StatCardProps) {
     return (
         <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
-             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</CardTitle>
-                <div className={cn("p-2 rounded-full text-white", color)}>
+            <CardContent className="p-0 flex items-center justify-center">
+                <div className={cn("p-4 rounded-full text-white m-4", color)}>
                    {icon}
                 </div>
-            </CardHeader>
-            <CardContent>
-                <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">{value}</div>
             </CardContent>
         </Card>
     )
