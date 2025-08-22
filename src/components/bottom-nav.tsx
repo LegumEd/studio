@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, MessageSquareQuestion, ShoppingCart, BarChart2, Settings } from 'lucide-react';
+import { Home, Users, MessageSquareQuote, ShoppingCart, BarChart2, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/enrollments', label: 'Students', icon: Users },
-  { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuestion },
+  { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuote },
   { href: '/sales', label: 'Sales', icon: ShoppingCart },
   { href: '/reports', label: 'Reports', icon: BarChart2 },
   { href: '/settings', label: 'Settings', icon: Settings },
@@ -44,5 +44,3 @@ export function BottomNav() {
     </nav>
   );
 }
-
-    

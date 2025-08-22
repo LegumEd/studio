@@ -7,7 +7,7 @@ import { BottomNav } from './bottom-nav';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from './ui/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, MessageSquareQuestion, ShoppingCart, BarChart2, Settings, Scale } from 'lucide-react';
+import { Home, Users, MessageSquareQuote, ShoppingCart, BarChart2, Settings, Scale } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
 
 
@@ -29,7 +29,7 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
     const navItems = [
       { href: '/dashboard', label: 'Dashboard', icon: Home },
       { href: '/enrollments', label: 'Students', icon: Users },
-      { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuestion },
+      { href: '/enquiries', label: 'Enquiries', icon: MessageSquareQuote },
       { href: '/sales', label: 'Sales', icon: ShoppingCart },
       { href: '/reports', label: 'Reports', icon: BarChart2 },
       { href: '/settings', label: 'Settings', icon: Settings },
@@ -85,5 +85,3 @@ const AppShell = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default AppShell;
-
-    
