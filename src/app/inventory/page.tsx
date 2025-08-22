@@ -49,12 +49,7 @@ export default function InventoryPage() {
   };
   
   const openEditModal = (item: InventoryItem) => {
-    // Note: To edit price, we'd need to fetch it from the 'materials' collection
-    // For now, we assume the price is part of the inventory item or we fetch it.
-    // Let's assume we need to fetch it. For simplicity, we'll just edit the title.
-    // A better approach would be to join this data or fetch it on demand.
-    // Let's just create a shell for editing name/price for now.
-    setEditingMaterial({ id: item.id, name: item.title, price: 0 /* Fetch or pass this in */ });
+    setEditingMaterial({ id: item.id, name: item.title, price: 0 });
     setIsEditModalOpen(true);
   }
 
@@ -124,7 +119,8 @@ export default function InventoryPage() {
             <CardDescription>A real-time view of your study material inventory.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-md">
+            {/* Desktop Table View */}
+            <div className="border rounded-md hidden md:block">
               <div className="w-full overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -166,6 +162,39 @@ export default function InventoryPage() {
                 </Table>
               </div>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="grid gap-4 md:hidden">
+              {inventory.map((item) => (
+                <Card key={item.id} className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                        <p className="font-semibold text-gray-900 dark:text-gray-50 flex-1 pr-2">{item.title}</p>
+                        <Badge variant={item.availableStock < 10 ? "destructive" : "default"}>
+                            {item.availableStock} available
+                        </Badge>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Stock: {item.totalStock}</p>
+                    <div className="flex gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => openEditModal(item)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="default" className="flex-1" onClick={() => openAddStockModal(item)}>
+                        <PackagePlus className="mr-2 h-4 w-4" />
+                        Add Stock
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {inventory.length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                    <p>No inventory found. Add materials in Settings.</p>
+                </div>
+              )}
+            </div>
+
           </CardContent>
         </Card>
       </main>
