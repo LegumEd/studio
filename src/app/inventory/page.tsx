@@ -1,25 +1,27 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db } from "@/lib/firebase";
-import { collection, onSnapshot, doc, updateDoc, increment, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, increment, query, orderBy, writeBatch } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import type { InventoryItem } from "@/lib/types";
+import type { InventoryItem, StudyMaterial } from "@/lib/types";
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
-import { PackagePlus } from 'lucide-react';
+import { PackagePlus, Edit, Package } from 'lucide-react';
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<StudyMaterial | null>(null);
   const [stockToAdd, setStockToAdd] = useState<number | ''>('');
   const { toast } = useToast();
 
@@ -35,12 +37,26 @@ export default function InventoryPage() {
 
     return () => unsubscribe();
   }, []);
+  
+  const overallAvailableStock = useMemo(() => {
+      return inventory.reduce((total, item) => total + item.availableStock, 0);
+  }, [inventory]);
 
   const openAddStockModal = (item: InventoryItem) => {
     setSelectedItem(item);
     setStockToAdd('');
     setIsStockModalOpen(true);
   };
+  
+  const openEditModal = (item: InventoryItem) => {
+    // Note: To edit price, we'd need to fetch it from the 'materials' collection
+    // For now, we assume the price is part of the inventory item or we fetch it.
+    // Let's assume we need to fetch it. For simplicity, we'll just edit the title.
+    // A better approach would be to join this data or fetch it on demand.
+    // Let's just create a shell for editing name/price for now.
+    setEditingMaterial({ id: item.id, name: item.title, price: 0 /* Fetch or pass this in */ });
+    setIsEditModalOpen(true);
+  }
 
   const handleAddStock = async () => {
     if (!selectedItem || stockToAdd === '' || +stockToAdd <= 0) {
@@ -61,11 +77,47 @@ export default function InventoryPage() {
     setIsStockModalOpen(false);
     setSelectedItem(null);
   };
+  
+  const handleUpdateMaterial = async () => {
+    if (!editingMaterial || editingMaterial.name.trim() === "") {
+      toast({ title: "Error", description: "Material name cannot be empty.", variant: "destructive" });
+      return;
+    }
+    try {
+        const batch = writeBatch(db);
+
+        const materialRef = doc(db, "materials", editingMaterial.id);
+        batch.update(materialRef, { name: editingMaterial.name.trim() });
+        
+        const inventoryRef = doc(db, "inventory", editingMaterial.id);
+        batch.update(inventoryRef, { title: editingMaterial.name.trim() });
+        
+        await batch.commit();
+
+        toast({ title: "Success", description: "Material updated successfully." });
+    } catch (error) {
+        console.error("Error updating material:", error);
+        toast({ title: "Error", description: "Failed to update material.", variant: "destructive" });
+    }
+    setIsEditModalOpen(false);
+    setEditingMaterial(null);
+  };
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageHeader title="Inventory Management" subtitle="Track and manage stock of study materials" />
       <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
+        <Card className="w-full md:w-1/3">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Overall Available Stock</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{overallAvailableStock}</div>
+                <p className="text-xs text-muted-foreground">Total units available across all materials</p>
+            </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Current Stock</CardTitle>
@@ -80,7 +132,7 @@ export default function InventoryPage() {
                       <TableHead>Material Title</TableHead>
                       <TableHead>Total Stock</TableHead>
                       <TableHead>Available Stock</TableHead>
-                      <TableHead className="w-[150px] text-right">Actions</TableHead>
+                      <TableHead className="w-[250px] text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -93,8 +145,12 @@ export default function InventoryPage() {
                              {item.availableStock}
                            </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="outline" onClick={() => openAddStockModal(item)}>
+                        <TableCell className="text-right space-x-2">
+                          <Button size="sm" variant="outline" onClick={() => openEditModal(item)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                          <Button size="sm" variant="default" onClick={() => openAddStockModal(item)}>
                             <PackagePlus className="mr-2 h-4 w-4" />
                             Add Stock
                           </Button>
@@ -136,6 +192,32 @@ export default function InventoryPage() {
                 <Button variant="secondary">Cancel</Button>
             </DialogClose>
             <Button onClick={handleAddStock}>Add Stock</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Material: {editingMaterial?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div>
+              <Label htmlFor="materialName">Material Name</Label>
+              <Input
+                id="materialName"
+                value={editingMaterial?.name || ''}
+                onChange={(e) => editingMaterial && setEditingMaterial({...editingMaterial, name: e.target.value})}
+                autoFocus
+              />
+            </div>
+             {/* Note: Editing price requires fetching and is omitted for simplicity as requested */}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleUpdateMaterial}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
