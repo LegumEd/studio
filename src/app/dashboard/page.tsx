@@ -9,12 +9,14 @@ export default async function DashboardPage() {
   const { chartData, totalIncome, totalExpenses, netBalance } = await getTransactionChartData();
 
   return (
-    <DashboardClient
-      stats={stats}
-      chartData={chartData}
-      totalIncome={totalIncome}
-      totalExpenses={totalExpenses}
-      netBalance={netBalance}
-    />
+    <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <DashboardClient
+            stats={stats}
+            chartData={chartData}
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            netBalance={netBalance}
+        />
+    </div>
   );
 }
