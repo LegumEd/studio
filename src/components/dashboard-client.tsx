@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, BookOpen, Target, Scale, TrendingUp, TrendingDown, PlusCircle } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
@@ -13,6 +14,7 @@ import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import type { Transaction } from '@/lib/types';
 import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
 
 type DashboardClientProps = {
   stats: {
@@ -25,6 +27,15 @@ type DashboardClientProps = {
   totalExpenses: number;
   netBalance: number;
 };
+
+const ClickableCard = ({ href, className, children }: { href: string; className?: string; children: React.ReactNode }) => (
+    <Link href={href} className="block">
+        <Card className={cn("rounded-2xl shadow-soft dark:shadow-soft-dark transition-transform duration-300 hover:-translate-y-1 cursor-pointer", className)}>
+            {children}
+        </Card>
+    </Link>
+);
+
 
 export default function DashboardClient({ stats, chartData, totalIncome, totalExpenses, netBalance }: DashboardClientProps) {
   const { studentCount, courseCount, pendingEnquiries } = stats;
@@ -41,6 +52,11 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
         toast({ title: "Error", description: "Failed to add expense.", variant: "destructive" });
     }
   }
+  
+  const stopPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -72,7 +88,7 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
         </Card>
 
         <div className="grid grid-cols-2 gap-4">
-          <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+          <ClickableCard href="/expenses">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-500" />
@@ -80,11 +96,11 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
             <CardContent>
               <div className="text-2xl font-bold text-green-500">₹{totalIncome.toLocaleString()}</div>
             </CardContent>
-          </Card>
-          <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+          </ClickableCard>
+          <ClickableCard href="/expenses">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={stopPropagation}>
                  <TransactionForm
                     isOpen={isExpenseFormOpen}
                     setIsOpen={setIsExpenseFormOpen}
@@ -102,10 +118,10 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
             <CardContent>
               <div className="text-2xl font-bold text-red-500">₹{totalExpenses.toLocaleString()}</div>
             </CardContent>
-          </Card>
+          </ClickableCard>
         </div>
 
-        <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
+        <ClickableCard href="/expenses">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
             <Scale className="h-4 w-4 text-blue-500" />
@@ -113,7 +129,7 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
           <CardContent>
             <div className={`text-2xl font-bold ${netBalance >= 0 ? "text-blue-500" : "text-red-500"}`}>₹{netBalance.toLocaleString()}</div>
           </CardContent>
-        </Card>
+        </ClickableCard>
 
         <div className="grid grid-cols-3 gap-4">
           <StatCard icon={<Users className="h-5 w-5" />} value={studentCount} color="bg-blue-500" />
