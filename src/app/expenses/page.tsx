@@ -56,7 +56,7 @@ export default function ExpensesPage() {
     setIsFormOpen(true);
   };
 
-  const processSubmit = async (data: Transaction) => {
+  const processSubmit = async (data: Omit<Transaction, 'id'>) => {
     try {
       if (editingTransaction) {
         const transactionRef = doc(db, "transactions", editingTransaction.id);
