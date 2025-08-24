@@ -166,8 +166,7 @@ export default function ExpensesPage() {
     win?.document.write(printContents);
     win?.document.close();
     win?.print();
-  }
-
+  };
 
   return (
      <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
