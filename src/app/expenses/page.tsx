@@ -6,34 +6,15 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, PlusCircle, ArrowUpRight, ArrowDownLeft, Scale, Printer } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { PageHeader } from '@/components/page-header';
-
-const transactionSchema = z.object({
-  description: z.string().min(2, "Description is required"),
-  amount: z.coerce.number().min(0.01, "Amount must be greater than zero"),
-  type: z.enum(["Income", "Expense"]),
-  category: z.string().min(1, "Category is required"),
-  date: z.string().min(1, "Date is required"),
-});
-
-type Transaction = z.infer<typeof transactionSchema> & {
-  id: string;
-};
-
-const incomeCategories = ["Fee Collection", "Sales", "Miscellaneous"];
-const expenseCategories = ["Rent", "Utilities", "Salaries", "Marketing", "Supplies", "Miscellaneous"];
+import { Transaction, transactionSchema } from '@/lib/types';
+import TransactionForm from '@/components/transaction-form';
 
 export default function ExpensesPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -43,21 +24,6 @@ export default function ExpensesPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<z.infer<typeof transactionSchema>>({
-    resolver: zodResolver(transactionSchema),
-    defaultValues: { type: "Income", date: format(new Date(), "yyyy-MM-dd") }
-  });
-
-  const transactionType = watch("type");
 
   useEffect(() => {
     const q = query(collection(db, "transactions"), orderBy("date", "desc"));
@@ -87,19 +53,10 @@ export default function ExpensesPage() {
 
   const openForm = (transaction: Transaction | null = null) => {
     setEditingTransaction(transaction);
-    if (transaction) {
-      setValue("description", transaction.description);
-      setValue("amount", transaction.amount);
-      setValue("type", transaction.type);
-      setValue("category", transaction.category);
-      setValue("date", transaction.date);
-    } else {
-      reset({ description: "", amount: 0, type: "Income", category: "", date: format(new Date(), "yyyy-MM-dd") });
-    }
     setIsFormOpen(true);
   };
 
-  const processSubmit = async (data: z.infer<typeof transactionSchema>) => {
+  const processSubmit = async (data: Transaction) => {
     try {
       if (editingTransaction) {
         const transactionRef = doc(db, "transactions", editingTransaction.id);
@@ -215,12 +172,20 @@ export default function ExpensesPage() {
   return (
      <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
         <PageHeader title="Expenses & Income" subtitle="Track all income and expenses">
-            <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Transaction
-                </span>
-            </Button>
+            <TransactionForm 
+                isOpen={isFormOpen} 
+                setIsOpen={setIsFormOpen}
+                onSubmit={processSubmit}
+                transaction={editingTransaction}
+                triggerButton={
+                    <Button size="sm" className="h-8 gap-1" onClick={() => openForm()}>
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Add Transaction
+                        </span>
+                    </Button>
+                }
+            />
         </PageHeader>
         <main className="flex-1 p-4 md:p-6 grid gap-4 md:gap-6">
        <div className="grid gap-4 md:grid-cols-3">
@@ -325,70 +290,6 @@ export default function ExpensesPage() {
         </CardContent>
       </Card>
       
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingTransaction ? "Edit Transaction" : "Add New Transaction"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(processSubmit)} className="grid gap-4 py-4">
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" {...register("description")} />
-                {errors.description && <p className="text-destructive text-sm mt-1">{errors.description.message}</p>}
-              </div>
-               <div>
-                <Label htmlFor="date">Date</Label>
-                <Input id="date" type="date" {...register("date")} />
-                {errors.date && <p className="text-destructive text-sm mt-1">{errors.date.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="amount">Amount</Label>
-                <Input id="amount" type="number" step="0.01" {...register("amount")} />
-                {errors.amount && <p className="text-destructive text-sm mt-1">{errors.amount.message}</p>}
-              </div>
-              <div>
-                <Label htmlFor="type">Type</Label>
-                <Controller
-                  name="type"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      setValue("category", ""); // Reset category on type change
-                    }} value={field.value}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Income">Income</SelectItem>
-                        <SelectItem value="Expense">Expense</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Controller
-                  name="category"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!transactionType}>
-                      <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-                      <SelectContent>
-                        {(transactionType === 'Income' ? incomeCategories : expenseCategories).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.category && <p className="text-destructive text-sm mt-1">{errors.category.message}</p>}
-              </div>
-              <DialogFooter>
-                <DialogClose asChild><Button type="button" variant="secondary">Cancel</Button></DialogClose>
-                <Button type="submit">Save Transaction</Button>
-              </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -406,5 +307,3 @@ export default function ExpensesPage() {
      </div>
   );
 }
-
-    

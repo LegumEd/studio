@@ -1,12 +1,18 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, Target, Scale, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, BookOpen, Target, Scale, TrendingUp, TrendingDown, PlusCircle } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import TransactionForm from './transaction-form';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import type { Transaction } from '@/lib/types';
+import { Button } from './ui/button';
 
 type DashboardClientProps = {
   stats: {
@@ -22,6 +28,19 @@ type DashboardClientProps = {
 
 export default function DashboardClient({ stats, chartData, totalIncome, totalExpenses, netBalance }: DashboardClientProps) {
   const { studentCount, courseCount, pendingEnquiries } = stats;
+  const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleAddExpense = async (data: Omit<Transaction, 'id'>) => {
+    try {
+        await addDoc(collection(db, "transactions"), data);
+        toast({ title: "Success", description: "Expense added successfully." });
+        setIsExpenseFormOpen(false);
+    } catch (error) {
+        console.error("Error adding expense:", error);
+        toast({ title: "Error", description: "Failed to add expense.", variant: "destructive" });
+    }
+  }
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -65,7 +84,20 @@ export default function DashboardClient({ stats, chartData, totalIncome, totalEx
           <Card className="rounded-2xl shadow-soft dark:shadow-soft-dark">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <div className="flex items-center gap-2">
+                 <TransactionForm
+                    isOpen={isExpenseFormOpen}
+                    setIsOpen={setIsExpenseFormOpen}
+                    onSubmit={handleAddExpense as any}
+                    initialType="Expense"
+                    triggerButton={
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                            <PlusCircle className="h-5 w-5 text-destructive" />
+                        </Button>
+                    }
+                 />
+                <TrendingDown className="h-4 w-4 text-red-500" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-500">₹{totalExpenses.toLocaleString()}</div>

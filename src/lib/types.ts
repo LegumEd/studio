@@ -1,5 +1,6 @@
 
 import { Timestamp } from "firebase/firestore";
+import * as z from "zod";
 
 export interface DocumentFile {
   name: string;
@@ -12,7 +13,7 @@ export interface Payment {
   mode: "Cash" | "UPI" | "Bank Transfer";
   date: string;
   timestamp: string;
-  collectedBy: string;
+  collectedBy?: string;
 }
 
 export interface Student {
@@ -68,6 +69,18 @@ export interface Sale {
     collegeUniversity?: string;
     saleDate: string;
 }
+
+export const transactionSchema = z.object({
+  description: z.string().min(2, "Description is required"),
+  amount: z.coerce.number().min(0.01, "Amount must be greater than zero"),
+  type: z.enum(["Income", "Expense"]),
+  category: z.string().min(1, "Category is required"),
+  date: z.string().min(1, "Date is required"),
+});
+
+export type Transaction = z.infer<typeof transactionSchema> & {
+  id: string;
+};
 
 
 // This is managed in Firestore and fetched dynamically.
